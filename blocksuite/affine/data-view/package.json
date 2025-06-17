@@ -37,7 +37,8 @@
     "./property-pure-presets": "./src/property-presets/pure-index.ts",
     "./view-presets": "./src/view-presets/index.ts",
     "./widget-presets": "./src/widget-presets/index.ts",
-    "./effects": "./src/effects.ts"
+    "./effects": "./src/effects.ts",
+    "./formula": "./src/formula/index.ts"
   },
   "files": [
     "src",
