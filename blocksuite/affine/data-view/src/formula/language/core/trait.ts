@@ -3,13 +3,13 @@ import type { ValueConstructor } from './value.js';
 
 export function defineTrait<T>(id: string): Trait<T> {
   return {
-    id,
-    _marker: undefined as never,
-    map: <U>() => defineTrait<U>(id) as Trait<U>,
+    id: Symbol(id),
+    label: id,
+    _marker: undefined,
   };
 }
 
-const traitMap: Map<ValueConstructor, Map<string, any>> = new Map();
+const traitMap: Map<ValueConstructor, Map<symbol, any>> = new Map();
 
 export function getImpl<T>(
   ctor: ValueConstructor,
@@ -30,7 +30,7 @@ export function getImpl<T>(
   const impl = implMap?.get(trait.id);
 
   if (!impl && !optional) {
-    throw new Error(`Trait ${trait.id} is not defined for ${ctor.name}.`);
+    throw new Error(`Trait ${trait.label} is not defined for ${ctor.name}.`);
   }
 
   return (impl ?? null) as Readonly<T> | null;
@@ -48,7 +48,9 @@ export function addImpl<T>(
   const implMap = traitMap.get(ctor)!;
 
   if (implMap.has(trait.id) && !replace) {
-    throw new Error(`Trait ${trait.id} is already defined for ${ctor.name}.`);
+    throw new Error(
+      `Trait ${trait.label} is already defined for ${ctor.name}.`
+    );
   }
   implMap.set(trait.id, impl);
 }

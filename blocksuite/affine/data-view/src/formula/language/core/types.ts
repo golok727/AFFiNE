@@ -1,5 +1,5 @@
 export type Trait<T> = {
-  readonly id: string;
+  readonly id: symbol;
+  readonly label: string;
   _marker?: T;
-  map<U>(): Trait<U>;
 };
