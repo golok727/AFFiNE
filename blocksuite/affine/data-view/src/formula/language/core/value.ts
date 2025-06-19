@@ -2,6 +2,7 @@ import type { Trait } from './types.js';
 
 export interface ValueConstructor {
   new (...args: any[]): Value;
+  readonly typeHint: string;
   readonly properties: PropertyAccessorMap<any>;
 }
 

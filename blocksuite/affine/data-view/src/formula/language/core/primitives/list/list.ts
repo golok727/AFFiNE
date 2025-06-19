@@ -5,10 +5,18 @@ import { NumberValue } from '../number/number.js';
 import { StringValue } from '../string/string.js';
 
 export class List extends BaseValue {
-  typeHint: string = 'List';
+  static override readonly typeHint: string = 'List';
 
   constructor(public readonly items: Value[]) {
     super();
+  }
+
+  detectType(): string {
+    const types = [...new Set(this.items.map(item => item.typeHint))];
+    if (types.length === 1) {
+      return `List of ${types[0]}`;
+    }
+    return `List`;
   }
 
   concat = new Fn(args => {

@@ -4,7 +4,7 @@ import { None } from '../none/none.js';
 import { Arguments } from './arguments.js';
 
 export class Fn extends BaseValue {
-  typeHint: string = 'Fn';
+  static override readonly typeHint: string = 'Fn';
 
   asString(): string {
     return `[Function: ${this.name}]`;

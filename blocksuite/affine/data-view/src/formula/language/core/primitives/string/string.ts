@@ -5,7 +5,7 @@ import { Fn } from '../fn/fn.js';
 import { NumberValue } from '../number/number.js';
 
 export class StringValue extends BaseValue {
-  readonly typeHint: string = 'String';
+  static override readonly typeHint: string = 'String';
 
   get length(): number {
     return this.value.length;
@@ -51,7 +51,7 @@ export class StringValue extends BaseValue {
     return Number(this.value);
   }
 
-  static is(val: unknown): val is StringValue {
+  static override is(val: unknown): val is StringValue {
     return val instanceof StringValue;
   }
 

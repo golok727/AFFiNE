@@ -13,7 +13,9 @@ const {
   numberPropertyConfig,
   progressPropertyConfig,
   selectPropertyConfig,
+  formulaPropertyConfig,
 } = propertyPresets;
+
 export const databaseBlockProperties = {
   checkboxColumnConfig: checkboxPropertyConfig,
   dateColumnConfig: datePropertyConfig,
@@ -22,8 +24,9 @@ export const databaseBlockProperties = {
   progressColumnConfig: progressPropertyConfig,
   selectColumnConfig: selectPropertyConfig,
   imageColumnConfig: propertyPresets.imagePropertyConfig,
+  formulaColumnConfig: formulaPropertyConfig,
   linkColumnConfig,
   richTextColumnConfig,
   titleColumnConfig,
   createdTimeColumnConfig,
-};
+} as const;

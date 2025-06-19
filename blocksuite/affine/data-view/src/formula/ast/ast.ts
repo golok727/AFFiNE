@@ -1,8 +1,10 @@
 import { TokenKind } from '../parser/token.js';
 import type { SrcSpan } from '../span.js';
 
+// eslint-disable @typescript-eslint/consistent-type-imports
 type Visitor<Result> = import('./visitor.js').Visitor<Result>;
 type Visit = import('./visitor.js').Visit;
+// eslint-enable @typescript-eslint/consistent-type-imports
 
 export abstract class Expr implements Visit {
   constructor(public readonly span: SrcSpan) {}

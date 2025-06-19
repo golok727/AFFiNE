@@ -2,7 +2,7 @@ import { type PropertyAccessorMap } from '../../value.js';
 import { BaseValue } from '../base.js';
 
 export class BooleanValue extends BaseValue {
-  readonly typeHint: string = 'Boolean';
+  static override readonly typeHint: string = 'Boolean';
 
   constructor(public readonly value: boolean) {
     super();
@@ -24,7 +24,7 @@ export class BooleanValue extends BaseValue {
     return new BooleanValue(!this.value);
   }
 
-  static is(val: unknown): val is BooleanValue {
+  static override is(val: unknown): val is BooleanValue {
     return val instanceof BooleanValue;
   }
 

@@ -3,7 +3,7 @@ import { BaseValue } from '../base.js';
 import { Fn } from '../fn/fn.js';
 
 export class NumberValue extends BaseValue {
-  readonly typeHint: string = 'Number';
+  static override readonly typeHint: string = 'Number';
 
   constructor(public readonly value: number) {
     super();
@@ -23,11 +23,11 @@ export class NumberValue extends BaseValue {
     return this.value;
   }
 
-  isNone(): boolean {
+  override isNone(): boolean {
     return false;
   }
 
-  static is(val: unknown): val is NumberValue {
+  static override is(val: unknown): val is NumberValue {
     return val instanceof NumberValue;
   }
 

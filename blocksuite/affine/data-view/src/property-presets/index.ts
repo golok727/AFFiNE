@@ -1,5 +1,6 @@
 import { checkboxPropertyConfig } from './checkbox/cell-renderer.js';
 import { datePropertyConfig } from './date/cell-renderer.js';
+import { formulaPropertyConfig } from './formula/cell-renderer.js';
 import { imagePropertyConfig } from './image/cell-renderer.js';
 import { multiSelectPropertyConfig } from './multi-select/cell-renderer.js';
 import { numberPropertyConfig } from './number/cell-renderer.js';
@@ -19,4 +20,5 @@ export const propertyPresets = {
   progressPropertyConfig,
   selectPropertyConfig,
   textPropertyConfig,
+  formulaPropertyConfig,
 };

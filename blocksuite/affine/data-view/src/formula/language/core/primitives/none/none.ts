@@ -1,7 +1,7 @@
 import { BaseValue } from '../base.js';
 
 export class NoneValue extends BaseValue {
-  readonly typeHint: string = 'None';
+  static override readonly typeHint: string = 'None';
 
   asString(): string {
     return 'None';
@@ -19,7 +19,7 @@ export class NoneValue extends BaseValue {
     return true;
   }
 
-  static is(val: unknown): val is NoneValue {
+  static override is(val: unknown): val is NoneValue {
     return val instanceof NoneValue;
   }
 }

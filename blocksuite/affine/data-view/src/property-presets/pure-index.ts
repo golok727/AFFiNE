@@ -1,5 +1,6 @@
 import { checkboxPropertyModelConfig } from './checkbox/define.js';
 import { datePropertyModelConfig } from './date/define.js';
+import { formulaPropertyModelConfig } from './formula/define.js';
 import { imagePropertyModelConfig } from './image/define.js';
 import { multiSelectPropertyModelConfig } from './multi-select/define.js';
 import { numberPropertyModelConfig } from './number/define.js';
@@ -16,4 +17,5 @@ export const propertyModelPresets = {
   progressPropertyModelConfig,
   selectPropertyModelConfig,
   textPropertyModelConfig,
+  formulaPropertyModelConfig,
 };

@@ -52,7 +52,7 @@ import {
   databaseBlockViews,
 } from './views/index.js';
 
-type SpacialProperty = {
+type SpecialProperty = {
   valueSet: (rowId: string, propertyId: string, value: unknown) => void;
   valueGet: (rowId: string, propertyId: string) => unknown;
 };
@@ -62,7 +62,7 @@ export class DatabaseBlockDataSource extends DataSourceBase {
     return this._model.store.provider;
   }
 
-  spacialProperties: Record<string, SpacialProperty> = {
+  specialProperties: Record<string, SpecialProperty> = {
     'created-time': {
       valueSet: () => {},
       valueGet: (rowId: string) => {
@@ -104,16 +104,16 @@ export class DatabaseBlockDataSource extends DataSourceBase {
     },
   };
 
-  isSpacialProperty(propertyType: string): boolean {
-    return this.spacialProperties[propertyType] !== undefined;
+  isSpecialProperty(propertyType: string): boolean {
+    return this.specialProperties[propertyType] !== undefined;
   }
 
-  spacialValueGet(
+  specialValueGet(
     rowId: string,
     propertyId: string,
     propertyType: string
   ): unknown {
-    return this.spacialProperties[propertyType]?.valueGet(rowId, propertyId);
+    return this.specialProperties[propertyType]?.valueGet(rowId, propertyId);
   }
 
   static externalProperties = signal<PropertyMetaConfig[]>([]);
@@ -268,15 +268,15 @@ export class DatabaseBlockDataSource extends DataSourceBase {
   }
 
   cellValueGet(rowId: string, propertyId: string): unknown {
-    if (this.isSpacialProperty(propertyId)) {
-      return this.spacialValueGet(rowId, propertyId, propertyId);
+    if (this.isSpecialProperty(propertyId)) {
+      return this.specialValueGet(rowId, propertyId, propertyId);
     }
     const type = this.propertyTypeGet(propertyId);
     if (!type) {
       return;
     }
-    if (this.isSpacialProperty(type)) {
-      return this.spacialValueGet(rowId, propertyId, type);
+    if (this.isSpecialProperty(type)) {
+      return this.specialValueGet(rowId, propertyId, type);
     }
     const meta = this.propertyMetaGet(type);
     if (!meta) {
