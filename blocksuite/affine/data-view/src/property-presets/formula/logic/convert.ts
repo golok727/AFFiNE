@@ -1,6 +1,6 @@
-import type { Value } from '../expression';
-import type { PropertyModel } from '../property';
-import type { GetRawValueFromConfig } from './../property/types';
+import type { PropertyModel } from './../../../core/property/property-config';
+import type { GetRawValueFromConfig } from './../../../core/property/types';
+import type { Value } from './../../../formula';
 
 export type PropertyToValueFn<
   P extends PropertyModel = PropertyModel,
@@ -10,7 +10,7 @@ export type PropertyToValueFn<
 /**
  * How to convert a property to a value.
  */
-export type PropertyToValueConfig<
+export type PropertyToValueConvert<
   P extends PropertyModel = PropertyModel,
   V extends Value = Value,
 > = {
@@ -21,7 +21,7 @@ export type PropertyToValueConfig<
 export function createPropertyToValueConfig<
   P extends PropertyModel<any, any, any, any>,
   V extends Value = Value,
->(model: P, convert: PropertyToValueFn<P, V>): PropertyToValueConfig<P, V> {
+>(model: P, convert: PropertyToValueFn<P, V>): PropertyToValueConvert<P, V> {
   return {
     propertyType: model.type,
     convert,

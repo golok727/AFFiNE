@@ -8,6 +8,10 @@ import {
 } from '../language/core/index.js';
 import { Environment } from '../language/environment.js';
 
+const random = new Fn(() => {
+  return new NumberValue(Math.random());
+}, 'random');
+
 const range = new Fn(args => {
   if (args.length === 0) {
     return new List([]);
@@ -63,6 +67,14 @@ export class FormulaRuntime extends Environment {
       description:
         'Concatenates multiple string values into a single string. \n\nUsage: `concat(value1, value2, ...)`',
       value: concat,
+    });
+
+    this.define({
+      type: 'value',
+      linkname: 'random',
+      description:
+        'Returns a random number between 0 (inclusive) and 1 (exclusive). \n\nUsage: `random()`',
+      value: random,
     });
 
     this.define({

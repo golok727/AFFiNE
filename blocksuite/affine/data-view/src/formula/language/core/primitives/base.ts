@@ -3,12 +3,17 @@ import type { Trait } from '../types.js';
 import type { PropertyAccessorMap, Value, ValueConstructor } from '../value.js';
 
 export abstract class BaseValue implements Value {
-  static readonly typeHint: string = (() => {
-    throw new Error('Please implement typeHint in the subclass');
-  })();
+  static readonly typeHint: string;
 
   get typeHint(): string {
-    return (this.constructor as typeof BaseValue).typeHint;
+    const typeHint = (this.constructor as typeof BaseValue).typeHint;
+    if (!typeHint) {
+      throw new Error(
+        `Type hint is not defined for ${this.constructor.name}. Please define static typeHint.
+        `
+      );
+    }
+    return typeHint;
   }
 
   abstract asString(): string;

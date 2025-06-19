@@ -203,7 +203,7 @@ export class DatabaseBlockDataSource extends DataSourceBase {
   ) {
     super();
     this._model = model; // ensure invariants first
-    init?.(this); // then allow external initialisation
+    init?.(this); // then allow external initialization
   }
 
   private _runCapture() {

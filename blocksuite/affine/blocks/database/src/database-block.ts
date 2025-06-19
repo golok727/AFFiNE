@@ -31,6 +31,10 @@ import {
   type SingleView,
   uniMap,
 } from '@blocksuite/data-view';
+import {
+  FormulaService,
+  FormulaServiceIdentifier,
+} from '@blocksuite/data-view/property-presets';
 import { widgetPresets } from '@blocksuite/data-view/widget-presets';
 import { Rect } from '@blocksuite/global/gfx';
 import {
@@ -122,6 +126,13 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<DatabaseBloc
 
   private readonly dataSource = lazy(() => {
     const dataSource = new DatabaseBlockDataSource(this.model, dataSource => {
+      // todo make extension
+      const formulaService = new FormulaService(dataSource, {
+        valueSpecs: [],
+        converts: [],
+      });
+      dataSource.serviceSet(FormulaServiceIdentifier, formulaService);
+
       dataSource.serviceSet(EditorHostKey, this.host);
       this.std.provider
         .getAll(ExternalGroupByConfigProvider)

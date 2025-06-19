@@ -1,4 +1,4 @@
-import type { Value, ValueConstructor } from '../../formula';
+import type { Value, ValueConstructor } from '../../../formula';
 
 export abstract class AbstractFormulaCellValue {
   abstract readonly value: Value;
