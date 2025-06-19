@@ -2412,6 +2412,14 @@ export function useAFFiNEI18N(): {
       */
     ["com.affine.import.snapshot.tooltip"](): string;
     /**
+      * `.affine file`
+      */
+    ["com.affine.import.dotaffinefile"](): string;
+    /**
+      * `Import your AFFiNE db file (.affine)`
+      */
+    ["com.affine.import.dotaffinefile.tooltip"](): string;
+    /**
       * `Import failed, please try again.`
       */
     ["com.affine.import.status.failed.message"](): string;
@@ -8605,6 +8613,10 @@ export function useAFFiNEI18N(): {
       * `Copilot session not found.`
       */
     ["error.COPILOT_SESSION_NOT_FOUND"](): string;
+    /**
+      * `Copilot session input is invalid.`
+      */
+    ["error.COPILOT_SESSION_INVALID_INPUT"](): string;
     /**
       * `Copilot session has been deleted.`
       */
