@@ -539,6 +539,20 @@ export class StreamObjectParser {
           }
           break;
         }
+        case 'tool-result': {
+          const index = acc.findIndex(
+            item =>
+              item.type === 'tool-call' &&
+              item.toolCallId === curr.toolCallId &&
+              item.toolName === curr.toolName
+          );
+          if (index !== -1) {
+            acc[index] = curr;
+          } else {
+            acc.push(curr);
+          }
+          break;
+        }
         default: {
           acc.push(curr);
           break;

@@ -186,11 +186,6 @@ export interface Copilot {
   quota: CopilotQuota;
   /** Get the session by id */
   session: CopilotSessionType;
-  /**
-   * Get the session id list in the workspace
-   * @deprecated Use `sessions` instead
-   */
-  sessionIds: Array<Scalars['String']['output']>;
   /** Get the session list in the workspace */
   sessions: Array<CopilotSessionType>;
   workspaceId: Maybe<Scalars['ID']['output']>;
@@ -213,11 +208,6 @@ export interface CopilotHistoriesArgs {
 
 export interface CopilotSessionArgs {
   sessionId: Scalars['String']['input'];
-}
-
-export interface CopilotSessionIdsArgs {
-  docId?: InputMaybe<Scalars['String']['input']>;
-  options?: InputMaybe<QueryChatSessionsInput>;
 }
 
 export interface CopilotSessionsArgs {
@@ -630,6 +620,7 @@ export interface DocType {
   mode: PublicDocMode;
   permissions: DocPermissions;
   public: Scalars['Boolean']['output'];
+  title: Maybe<Scalars['String']['output']>;
   updatedAt: Maybe<Scalars['DateTime']['output']>;
   workspaceId: Scalars['String']['output'];
 }
@@ -2007,6 +1998,7 @@ export interface QueryChatHistoriesInput {
   fork?: InputMaybe<Scalars['Boolean']['input']>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   messageOrder?: InputMaybe<ChatHistoryOrder>;
+  pinned?: InputMaybe<Scalars['Boolean']['input']>;
   sessionId?: InputMaybe<Scalars['String']['input']>;
   sessionOrder?: InputMaybe<ChatHistoryOrder>;
   skip?: InputMaybe<Scalars['Int']['input']>;
@@ -2015,6 +2007,10 @@ export interface QueryChatHistoriesInput {
 
 export interface QueryChatSessionsInput {
   action?: InputMaybe<Scalars['Boolean']['input']>;
+  fork?: InputMaybe<Scalars['Boolean']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  pinned?: InputMaybe<Scalars['Boolean']['input']>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
 }
 
 export interface QueryTooLongDataType {
@@ -2647,6 +2643,8 @@ export interface WorkspaceType {
   publicPages: Array<DocType>;
   /** quota of workspace */
   quota: WorkspaceQuotaType;
+  /** Get recently updated docs of a workspace */
+  recentlyUpdatedDocs: PaginatedDocType;
   /** Role of current signed in user in workspace */
   role: Permission;
   /** Search a specific table */
@@ -2692,6 +2690,10 @@ export interface WorkspaceTypePageMetaArgs {
 
 export interface WorkspaceTypePublicPageArgs {
   pageId: Scalars['String']['input'];
+}
+
+export interface WorkspaceTypeRecentlyUpdatedDocsArgs {
+  pagination: PaginationInput;
 }
 
 export interface WorkspaceTypeSearchArgs {
@@ -4064,6 +4066,39 @@ export type GetPublicUserByIdQuery = {
   } | null;
 };
 
+export type GetRecentlyUpdatedDocsQueryVariables = Exact<{
+  workspaceId: Scalars['String']['input'];
+  pagination: PaginationInput;
+}>;
+
+export type GetRecentlyUpdatedDocsQuery = {
+  __typename?: 'Query';
+  workspace: {
+    __typename?: 'WorkspaceType';
+    recentlyUpdatedDocs: {
+      __typename?: 'PaginatedDocType';
+      totalCount: number;
+      pageInfo: {
+        __typename?: 'PageInfo';
+        endCursor: string | null;
+        hasNextPage: boolean;
+      };
+      edges: Array<{
+        __typename?: 'DocTypeEdge';
+        node: {
+          __typename?: 'DocType';
+          id: string;
+          title: string | null;
+          createdAt: string | null;
+          updatedAt: string | null;
+          creatorId: string | null;
+          lastUpdaterId: string | null;
+        };
+      }>;
+    };
+  };
+};
+
 export type GetUserFeaturesQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GetUserFeaturesQuery = {
@@ -5196,6 +5231,11 @@ export type Queries =
       name: 'getPublicUserByIdQuery';
       variables: GetPublicUserByIdQueryVariables;
       response: GetPublicUserByIdQuery;
+    }
+  | {
+      name: 'getRecentlyUpdatedDocsQuery';
+      variables: GetRecentlyUpdatedDocsQueryVariables;
+      response: GetRecentlyUpdatedDocsQuery;
     }
   | {
       name: 'getUserFeaturesQuery';
