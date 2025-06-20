@@ -1,7 +1,9 @@
+import { t, type TypeInstance } from '../../../core';
 import type { Value, ValueConstructor } from '../../../formula';
 
-export abstract class AbstractFormulaCellValue {
+export abstract class AbstractFormulaEvaluatedValue {
   abstract readonly value: Value;
+  abstract readonly type: TypeInstance;
 
   abstract toJSON(): unknown;
 
@@ -10,25 +12,45 @@ export abstract class AbstractFormulaCellValue {
   }
 }
 
-export interface DataViewFormulaValueSpec<
+export interface DataViewFormulaEvalValueSpec<
   Cstr extends ValueConstructor = ValueConstructor,
-  T extends AbstractFormulaCellValue = AbstractFormulaCellValue,
+  T extends AbstractFormulaEvaluatedValue = AbstractFormulaEvaluatedValue,
 > {
   target: string;
   create: (value: InstanceType<Cstr>) => T;
   renderer: (cell: T) => unknown;
 }
 
-export function defineFormulaValue<
+export function defineFormulaEvalValue<
   Cstr extends ValueConstructor = ValueConstructor,
-  T extends AbstractFormulaCellValue = AbstractFormulaCellValue,
+  T extends AbstractFormulaEvaluatedValue = AbstractFormulaEvaluatedValue,
 >(
   cstr: Cstr,
-  options: Omit<DataViewFormulaValueSpec<Cstr, T>, 'target'>
-): DataViewFormulaValueSpec<Cstr, T> {
+  options: Omit<DataViewFormulaEvalValueSpec<Cstr, T>, 'target'>
+): DataViewFormulaEvalValueSpec<Cstr, T> {
   return {
     target: cstr.typeHint,
     create: options.create,
     renderer: options.renderer,
   };
 }
+
+export class UnknownFormulaValue extends AbstractFormulaEvaluatedValue {
+  override type: TypeInstance = t.unknown.instance();
+
+  constructor(public override value: Value) {
+    super();
+  }
+
+  override toJSON(): unknown {
+    return this.value.asString();
+  }
+}
+
+export const unknownFormulaValueSpec: DataViewFormulaEvalValueSpec = {
+  target: 'any',
+  create: (value: Value) => new UnknownFormulaValue(value),
+  renderer: (cell: UnknownFormulaValue) => {
+    return cell.value.asString();
+  },
+};

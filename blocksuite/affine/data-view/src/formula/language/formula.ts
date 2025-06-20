@@ -30,7 +30,7 @@ export class Formula implements Visit {
   }
 
   compile(): this {
-    const error = this.compileSafe()[1];
+    const error = this.compileSafe().error;
     if (error) {
       throw error;
     }
@@ -38,21 +38,27 @@ export class Formula implements Visit {
   }
 
   compileSafe():
-    | [formula: Formula, error: null]
-    | [formula: null, error: Error] {
+    | {
+        formula: Formula;
+        error: null;
+      }
+    | {
+        formula: null;
+        error: Error;
+      } {
     try {
       const parser = new Parser(this.source);
       const root = parser.parse();
       this._root = root;
-      return [this, null];
+      return { formula: this, error: null };
     } catch (e) {
       if (e instanceof FormulaParseError) {
-        return [
-          null,
-          new CompilationError(
+        return {
+          formula: null,
+          error: new CompilationError(
             `ParseError: ${e.message} at [${e.span.start}:${e.span.end}]`
           ),
-        ];
+        };
       }
       throw e;
     }

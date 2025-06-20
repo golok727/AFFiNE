@@ -32,6 +32,7 @@ import {
   uniMap,
 } from '@blocksuite/data-view';
 import {
+  defaultDataViewFormulaConfig,
   FormulaService,
   FormulaServiceIdentifier,
 } from '@blocksuite/data-view/property-presets';
@@ -127,10 +128,10 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<DatabaseBloc
   private readonly dataSource = lazy(() => {
     const dataSource = new DatabaseBlockDataSource(this.model, dataSource => {
       // todo make extension
-      const formulaService = new FormulaService(dataSource, {
-        valueSpecs: [],
-        converts: [],
-      });
+      const formulaService = new FormulaService(
+        dataSource,
+        defaultDataViewFormulaConfig
+      );
       dataSource.serviceSet(FormulaServiceIdentifier, formulaService);
 
       dataSource.serviceSet(EditorHostKey, this.host);

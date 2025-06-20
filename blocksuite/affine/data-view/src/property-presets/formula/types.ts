@@ -1,15 +1,15 @@
 import zod from 'zod';
 
 import { defineDataType } from '../../core/logical/data-type';
-import { AbstractFormulaCellValue } from './logic';
+import { AbstractFormulaEvaluatedValue } from './logic';
 
 export const FormulaPropertySchema = zod.object({
   code: zod.string(),
 });
 
 export const FormulaCellValueSchema = zod
-  .custom<AbstractFormulaCellValue>(
-    data => data instanceof AbstractFormulaCellValue
+  .custom<AbstractFormulaEvaluatedValue>(
+    data => data instanceof AbstractFormulaEvaluatedValue
   )
   .nullable();
 

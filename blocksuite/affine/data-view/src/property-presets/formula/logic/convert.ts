@@ -20,7 +20,7 @@ export type PropertyToValueConvert<
 
 export function createPropertyToValueConfig<
   P extends PropertyModel<any, any, any, any>,
-  V extends Value = Value,
+  V extends Value,
 >(model: P, convert: PropertyToValueFn<P, V>): PropertyToValueConvert<P, V> {
   return {
     propertyType: model.type,

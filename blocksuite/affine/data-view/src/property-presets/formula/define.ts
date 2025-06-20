@@ -1,14 +1,12 @@
 import zod from 'zod';
 
 import { propertyType } from '../../core/property/property-config.js';
-import { AbstractFormulaCellValue } from './logic/value.js';
-import {
-  FormulaCellValueSchema,
-  formulaDataType,
-  FormulaPropertySchema,
-} from './types.js';
+import { formulaDataType, FormulaPropertySchema } from './types.js';
 
 export const formulaPropertyType = propertyType('formula');
+
+// todo fix datatype
+
 export const formulaPropertyModelConfig = formulaPropertyType.modelConfig({
   name: 'Formula',
   propertyData: {
@@ -16,11 +14,8 @@ export const formulaPropertyModelConfig = formulaPropertyType.modelConfig({
     default: () => ({ code: '(random() * 10).floor()' }),
   },
   rawValue: {
-    schema: zod
-      .custom<AbstractFormulaCellValue>(
-        data => data instanceof AbstractFormulaCellValue
-      )
-      .nullable(),
+    // cached value
+    schema: zod.any().nullable(),
     default: () => null,
     toString: function (config): string {
       return config.value?.toString() ?? '';
@@ -32,14 +27,14 @@ export const formulaPropertyModelConfig = formulaPropertyType.modelConfig({
       };
     },
     toJson: config => {
-      return config.value?.toJSON() ?? undefined;
+      return config.value ?? undefined;
     },
     fromJson: _config => {
       return undefined;
     },
   },
   jsonValue: {
-    schema: FormulaCellValueSchema,
+    schema: zod.any().nullable(),
     isEmpty: () => false,
     type: () => formulaDataType.instance(),
   },

@@ -3,12 +3,11 @@ import { html } from 'lit';
 
 import { BaseCellRenderer, createFromBaseCellRenderer } from '../../core';
 import { formulaPropertyModelConfig } from './define';
-import type { AbstractFormulaCellValue } from './logic';
 import { FormulaServiceIdentifier } from './logic';
 import { type FormulaPropertyData } from './types';
 
 export class FormulaCell extends BaseCellRenderer<
-  AbstractFormulaCellValue | null,
+  unknown,
   FormulaPropertyData,
   FormulaPropertyData
 > {
@@ -20,12 +19,7 @@ export class FormulaCell extends BaseCellRenderer<
     return this.property.data$.value.code;
   });
 
-  override connectedCallback() {
-    super.connectedCallback();
-    this._disposables.add(this._code$.subscribe(this._evaluate));
-  }
-
-  private readonly _evaluate = () => {
+  private readonly _evalValue$ = computed(() => {
     const service = this.formulaService;
 
     if (!service) {
@@ -34,15 +28,26 @@ export class FormulaCell extends BaseCellRenderer<
     }
 
     const res = service.getCellValue({
-      property: this.property,
+      code: this.property.data$.value.code,
+      propertyId: this.property.id,
       rowId: this.cell.rowId,
     });
 
-    this.valueSetNextTick(res);
-  };
+    this.valueSetNextTick(res?.toJSON() ?? null);
+
+    return res;
+  });
+
+  override connectedCallback() {
+    super.connectedCallback();
+    this._disposables.add(this._code$.subscribe(this._evaluate));
+  }
+
+  private readonly _evaluate = () => {};
 
   override render() {
-    const value = this.value;
+    const value = this._evalValue$.value;
+
     if (!value) {
       return html`<div>
         <span>Fail</span>
