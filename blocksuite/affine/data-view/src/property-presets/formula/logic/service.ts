@@ -108,6 +108,8 @@ export class FormulaService {
 
   propertyToValue(property: Property, rowId: string): Value {
     const type = property.type$.value;
+    console.log('datatype', property.dataType$.value?.name);
+
     const convert = this._converts[type];
     if (!convert) {
       const stringValue = property.stringValueGet(rowId);

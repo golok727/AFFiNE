@@ -48,7 +48,7 @@ export class UnknownFormulaValue extends AbstractFormulaEvaluatedValue {
 }
 
 export const unknownFormulaValueSpec: DataViewFormulaEvalValueSpec = {
-  target: 'any',
+  target: 'unknown',
   create: (value: Value) => new UnknownFormulaValue(value),
   renderer: (cell: UnknownFormulaValue) => {
     return cell.value.asString();

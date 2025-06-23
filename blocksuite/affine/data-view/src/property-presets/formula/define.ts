@@ -5,13 +5,11 @@ import { formulaDataType, FormulaPropertySchema } from './types.js';
 
 export const formulaPropertyType = propertyType('formula');
 
-// todo fix datatype
-
 export const formulaPropertyModelConfig = formulaPropertyType.modelConfig({
   name: 'Formula',
   propertyData: {
     schema: FormulaPropertySchema,
-    default: () => ({ code: '(random() * 10).floor()' }),
+    default: () => ({ code: '' }),
   },
   rawValue: {
     // cached value

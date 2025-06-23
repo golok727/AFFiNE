@@ -7,6 +7,7 @@ export type PropertyToValueFn<
   V extends Value = Value,
 > = (cell: GetRawValueFromConfig<P['config']>) => V;
 
+// use TypeInstance instead of PropertyModel ?
 /**
  * How to convert a property to a value.
  */

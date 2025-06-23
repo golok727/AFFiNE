@@ -1,6 +1,6 @@
 import { CheckboxCell } from './checkbox/cell-renderer.js';
 import { DateCell } from './date/cell-renderer.js';
-import { FormulaCell } from './formula/cell-renderer.js';
+import { formulaPropertyEffects } from './formula/effect.js';
 import { ImageCell } from './image/cell-renderer.js';
 import { MultiSelectCell } from './multi-select/cell-renderer.js';
 import { NumberCell } from './number/cell-renderer.js';
@@ -17,5 +17,5 @@ export function propertyPresetsEffects() {
   customElements.define('affine-database-progress-cell', ProgressCell);
   customElements.define('affine-database-select-cell', SelectCell);
   customElements.define('affine-database-text-cell', TextCell);
-  customElements.define('affine-database-formula-cell', FormulaCell);
+  formulaPropertyEffects();
 }
