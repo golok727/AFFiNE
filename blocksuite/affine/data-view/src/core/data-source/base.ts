@@ -2,106 +2,24 @@ import type { ColumnDataType } from '@blocksuite/affine-model';
 import type { InsertToPosition } from '@blocksuite/affine-shared/utils';
 import {
   Container,
-  createScope,
   type GeneralServiceIdentifier,
   type ServiceProvider,
 } from '@blocksuite/global/di';
 import { computed, type ReadonlySignal } from '@preact/signals-core';
 
+import {
+  createDataViewExtensionContext,
+  type DataViewExtensionType,
+} from '../extension/dataview.js';
 import type { TypeInstance } from '../logical/type.js';
 import type { PropertyMetaConfig } from '../property/property-config.js';
 import type { DatabaseFlags } from '../types.js';
 import type { ViewConvertConfig } from '../view/convert.js';
 import type { DataViewDataType, ViewMeta } from '../view/data-view.js';
 import type { ViewManager } from '../view-manager/view-manager.js';
-
-export interface DataSource {
-  readonly$: ReadonlySignal<boolean>;
-  properties$: ReadonlySignal<string[]>;
-  featureFlags$: ReadonlySignal<DatabaseFlags>;
-
-  cellValueGet(rowId: string, propertyId: string): unknown;
-  cellValueGet$(
-    rowId: string,
-    propertyId: string
-  ): ReadonlySignal<unknown | undefined>;
-  cellValueChange(rowId: string, propertyId: string, value: unknown): void;
-
-  rows$: ReadonlySignal<string[]>;
-  rowAdd(InsertToPosition: InsertToPosition | number): string;
-  rowDelete(ids: string[]): void;
-  rowMove(rowId: string, position: InsertToPosition): void;
-
-  propertyMetas$: ReadonlySignal<PropertyMetaConfig[]>;
-  allPropertyMetas$: ReadonlySignal<PropertyMetaConfig[]>;
-
-  propertyNameGet$(propertyId: string): ReadonlySignal<string | undefined>;
-  propertyNameGet(propertyId: string): string;
-  propertyNameSet(propertyId: string, name: string): void;
-
-  propertyTypeGet(propertyId: string): string | undefined;
-  propertyTypeGet$(propertyId: string): ReadonlySignal<string | undefined>;
-  propertyTypeSet(propertyId: string, type: string): void;
-  propertyTypeCanSet(propertyId: string): boolean;
-
-  propertyDataGet(propertyId: string): Record<string, unknown>;
-  propertyDataGet$(
-    propertyId: string
-  ): ReadonlySignal<Record<string, unknown> | undefined>;
-  propertyDataSet(propertyId: string, data: Record<string, unknown>): void;
-
-  propertyDataTypeGet(propertyId: string): TypeInstance | undefined;
-  propertyDataTypeGet$(
-    propertyId: string
-  ): ReadonlySignal<TypeInstance | undefined>;
-
-  propertyReadonlyGet(propertyId: string): boolean;
-  propertyReadonlyGet$(propertyId: string): ReadonlySignal<boolean>;
-
-  propertyMetaGet(type: string): PropertyMetaConfig | undefined;
-  propertyAdd(
-    insertToPosition: InsertToPosition,
-    ops?: {
-      type?: string;
-      name?: string;
-    }
-  ): string | undefined;
-
-  propertyDuplicate(propertyId: string): string | undefined;
-  propertyCanDuplicate(propertyId: string): boolean;
-
-  propertyDelete(id: string): void;
-  propertyCanDelete(propertyId: string): boolean;
-
-  provider: ServiceProvider;
-  serviceGet<T>(key: GeneralServiceIdentifier<T>): T | null;
-  serviceGetOrCreate<T>(key: GeneralServiceIdentifier<T>, create: () => T): T;
-
-  viewConverts: ViewConvertConfig[];
-  viewManager: ViewManager;
-  viewMetas: ViewMeta[];
-  viewDataList$: ReadonlySignal<DataViewDataType[]>;
-
-  viewDataGet(viewId: string): DataViewDataType | undefined;
-  viewDataGet$(viewId: string): ReadonlySignal<DataViewDataType | undefined>;
-
-  viewDataAdd(viewData: DataViewDataType): string;
-  viewDataDuplicate(id: string): string;
-  viewDataDelete(viewId: string): void;
-  viewDataMoveTo(id: string, position: InsertToPosition): void;
-  viewDataUpdate<ViewData extends DataViewDataType>(
-    id: string,
-    updater: (data: ViewData) => Partial<ViewData>
-  ): void;
-
-  viewMetaGet(type: string): ViewMeta;
-  viewMetaGet$(type: string): ReadonlySignal<ViewMeta | undefined>;
-
-  viewMetaGetById(viewId: string): ViewMeta | undefined;
-  viewMetaGetById$(viewId: string): ReadonlySignal<ViewMeta | undefined>;
-}
-
-export const DataSourceScope = createScope('data-source');
+import { DataSourceIdentifier, DataSourceScope } from './consts.js';
+import { CoreDataviewExtensions } from './extensions.js';
+import type { DataSource } from './source.js';
 
 export abstract class DataSourceBase implements DataSource {
   propertyTypeCanSet(propertyId: string): boolean {
@@ -113,7 +31,6 @@ export abstract class DataSourceBase implements DataSource {
   propertyCanDelete(propertyId: string): boolean {
     return !this.isFixedProperty(propertyId);
   }
-  protected container = new Container();
 
   abstract get parentProvider(): ServiceProvider;
 
@@ -158,21 +75,60 @@ export abstract class DataSourceBase implements DataSource {
     return computed(() => this.cellValueGet(rowId, propertyId));
   }
 
+  protected container = new Container();
+  protected _provider: ServiceProvider | null = null;
+
+  constructor(protected _userExtensions: DataViewExtensionType[] = []) {}
+
+  protected init(init?: (source: this) => void) {
+    if (this._provider) {
+      throw new Error('DataSource is already initialized.');
+    }
+
+    // extensions use this
+    this.serviceSet(DataSourceIdentifier, this);
+
+    this._loadDataViewExtensions();
+
+    init?.(this);
+
+    this._provider = this.container.provider(
+      DataSourceScope,
+      this.parentProvider
+    );
+  }
+
+  private _loadDataViewExtensions() {
+    const extensions = [...CoreDataviewExtensions, ...this._userExtensions];
+    const context = createDataViewExtensionContext(this.container, this);
+    extensions.forEach(extension => {
+      extension.setup(context);
+    });
+  }
+
   get provider() {
-    return this.container.provider(DataSourceScope, this.parentProvider);
+    if (!this._provider) {
+      throw new Error('please call init() before using provider');
+    }
+    return this._provider;
   }
 
   serviceGet<T>(key: GeneralServiceIdentifier<T>): T | null {
-    return this.provider.getOptional(key);
+    return this.provider.getOptional(key) ?? null;
   }
 
   serviceSet<T>(key: GeneralServiceIdentifier<T>, value: T): void {
+    if (this._provider) {
+      throw new Error(
+        'DataSource is already initialized, cannot set service after initialization.'
+      );
+    }
     this.container.addValue(key, value, { scope: DataSourceScope });
   }
 
   serviceGetOrCreate<T>(key: GeneralServiceIdentifier<T>, create: () => T): T {
     const result = this.serviceGet(key);
-    if (result != null) {
+    if (result !== null) {
       return result;
     }
     const value = create();

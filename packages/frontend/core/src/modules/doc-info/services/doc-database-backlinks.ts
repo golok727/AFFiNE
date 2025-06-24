@@ -33,7 +33,7 @@ export class DocDatabaseBacklinksService extends Service {
   }
 
   private adaptRowCells(dbModel: DatabaseBlockModel, rowId: string) {
-    const dataSource = new DatabaseBlockDataSource(dbModel);
+    const dataSource = new DatabaseBlockDataSource({ model: dbModel });
 
     const hydratedRows$ = combineLatest([
       signalToObservable(dataSource.rows$),

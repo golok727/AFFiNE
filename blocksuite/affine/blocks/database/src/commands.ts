@@ -59,7 +59,7 @@ export const initDatabaseBlock = (
   if (!blockModel) {
     return;
   }
-  const datasource = new DatabaseBlockDataSource(blockModel);
+  const datasource = new DatabaseBlockDataSource({ model: blockModel });
   databaseViewInitTemplate(datasource, viewType);
   if (isAppendNewRow) {
     const parent = doc.getParent(model);

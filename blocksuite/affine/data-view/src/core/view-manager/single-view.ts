@@ -65,7 +65,6 @@ export interface SingleView {
   ): string | undefined;
 
   serviceGet<T>(key: GeneralServiceIdentifier<T>): T | null;
-  serviceGetOrCreate<T>(key: GeneralServiceIdentifier<T>, create: () => T): T;
 
   traitGet<T>(key: TraitKey<T>): T | undefined;
 
@@ -208,10 +207,6 @@ export abstract class SingleViewBase<
 
   serviceGet<T>(key: GeneralServiceIdentifier<T>): T | null {
     return this.dataSource.serviceGet(key);
-  }
-
-  serviceGetOrCreate<T>(key: GeneralServiceIdentifier<T>, create: () => T): T {
-    return this.dataSource.serviceGetOrCreate(key, create);
   }
 
   dataUpdate(updater: (viewData: ViewData) => Partial<ViewData>): void {

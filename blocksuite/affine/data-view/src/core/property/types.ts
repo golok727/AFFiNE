@@ -3,10 +3,16 @@ import type { ZodType } from 'zod';
 
 import type { DataSource } from '../data-source/base.js';
 import type { TypeInstance } from '../logical/type.js';
+import type { PropertyModel } from './property-config.js';
 
 export type WithCommonPropertyConfig<T = {}> = T & {
   dataSource: DataSource;
 };
+
+export type GetPropertyMetaConfigFromModel<
+  Model extends PropertyModel<any, any, any, any>,
+> = ReturnType<Model['createPropertyMeta']>;
+
 export type GetPropertyDataFromConfig<T> =
   T extends PropertyConfig<infer R, any, any> ? R : never;
 export type GetRawValueFromConfig<T> =

@@ -1,8 +1,11 @@
+import type { ExtensionType } from '@blocksuite/store';
+
 import { checkboxPropertyConfig } from './checkbox/cell-renderer.js';
 import { datePropertyConfig } from './date/cell-renderer.js';
 import { imagePropertyConfig } from './image/cell-renderer.js';
 import { multiSelectPropertyConfig } from './multi-select/cell-renderer.js';
 import { numberPropertyConfig } from './number/cell-renderer.js';
+import { NumberPropertyExtension } from './number/property.js';
 import { progressPropertyConfig } from './progress/cell-renderer.js';
 import { selectPropertyConfig } from './select/cell-renderer.js';
 import { textPropertyConfig } from './text/cell-renderer.js';
@@ -10,6 +13,7 @@ import { textPropertyConfig } from './text/cell-renderer.js';
 export * from './converts.js';
 export * from './number/types.js';
 export * from './select/define.js';
+
 export const propertyPresets = {
   checkboxPropertyConfig,
   datePropertyConfig,
@@ -20,3 +24,7 @@ export const propertyPresets = {
   selectPropertyConfig,
   textPropertyConfig,
 };
+
+export const PropertyPresetExtensions: ExtensionType[] = [
+  NumberPropertyExtension,
+];

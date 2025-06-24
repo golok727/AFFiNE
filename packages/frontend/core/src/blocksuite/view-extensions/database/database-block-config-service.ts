@@ -1,10 +1,7 @@
-import {
-  DatabaseBlockDataSource,
-  ExternalGroupByConfigProvider,
-} from '@blocksuite/affine/blocks/database';
+import { DatabaseBlockDataSource } from '@blocksuite/affine/blocks/database';
 import type { ExtensionType } from '@blocksuite/affine/store';
 
-import { groupByConfigList } from '../../database-block/group-by';
+import { AffineDatabaseGroupByExtensions } from '../../database-block/group-by';
 import { propertiesPresets } from '../../database-block/properties';
 
 export function patchDatabaseBlockConfigService(): ExtensionType {
@@ -12,9 +9,11 @@ export function patchDatabaseBlockConfigService(): ExtensionType {
   DatabaseBlockDataSource.externalProperties.value = propertiesPresets;
   return {
     setup: di => {
-      groupByConfigList.forEach(config => {
-        di.addValue(ExternalGroupByConfigProvider(config.name), config);
-      });
+      di;
     },
   };
 }
+
+export const AffineDatabaseExtensions: ExtensionType[] = [
+  ...AffineDatabaseGroupByExtensions,
+];

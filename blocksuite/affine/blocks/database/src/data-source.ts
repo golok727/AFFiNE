@@ -14,6 +14,8 @@ import {
   type DatabaseFlags,
   DataSourceBase,
   type DataViewDataType,
+  DataViewExtensionIdentifier,
+  type DataViewExtensionType,
   type PropertyMetaConfig,
   type TypeInstance,
   type ViewManager,
@@ -197,13 +199,18 @@ export class DatabaseBlockDataSource extends DataSourceBase {
     );
   });
 
-  constructor(
-    model: DatabaseBlockModel,
-    init?: (dataSource: DatabaseBlockDataSource) => void
-  ) {
-    super();
+  constructor({
+    model,
+    extensions,
+    init,
+  }: {
+    model: DatabaseBlockModel;
+    extensions?: DataViewExtensionType[];
+    init?: (dataSource: DatabaseBlockDataSource) => void;
+  }) {
+    super(extensions);
     this._model = model; // ensure invariants first
-    init?.(this); // then allow external initialisation
+    this.init(init);
   }
 
   private _runCapture() {
@@ -658,7 +665,14 @@ export const convertToDatabase = (host: EditorHost, viewType: string) => {
   if (!databaseModel) {
     return;
   }
-  const datasource = new DatabaseBlockDataSource(databaseModel);
+
+  const extensions = Array.from(
+    host.std.provider.getAll(DataViewExtensionIdentifier).values()
+  );
+  const datasource = new DatabaseBlockDataSource({
+    model: databaseModel,
+    extensions,
+  });
   datasource.viewManager.viewAdd(viewType);
   host.store.moveBlocks(selectedModels, databaseModel);
 

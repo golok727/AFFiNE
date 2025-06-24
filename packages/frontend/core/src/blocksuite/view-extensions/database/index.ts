@@ -4,7 +4,10 @@ import {
 } from '@blocksuite/affine/ext-loader';
 import { z } from 'zod';
 
-import { patchDatabaseBlockConfigService } from './database-block-config-service';
+import {
+  AffineDatabaseExtensions,
+  patchDatabaseBlockConfigService,
+} from './database-block-config-service';
 
 const optionsSchema = z.object({});
 
@@ -20,7 +23,7 @@ export class AffineDatabaseViewExtension extends ViewExtensionProvider<AffineDat
     options?: AffineDatabaseViewOptions
   ) {
     super.setup(context, options);
-
+    context.register(AffineDatabaseExtensions);
     context.register(patchDatabaseBlockConfigService());
   }
 }
