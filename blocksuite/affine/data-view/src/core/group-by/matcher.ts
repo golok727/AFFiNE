@@ -1,12 +1,8 @@
 import { createIdentifier } from '@blocksuite/global/di';
-import type { ExtensionType } from '@blocksuite/store';
 
 import { DataSourceIdentifier } from '../data-source/consts.js';
 import { type DataSource } from '../data-source/source.js';
-import {
-  DataViewExtension,
-  type DataViewExtensionType,
-} from '../extension/dataview.js';
+import { type DataViewExtensionType } from '../extension/dataview.js';
 import { Matcher_ } from '../logical/matcher.js';
 import { groupByMatchers } from './define.js';
 import type { GroupByConfig } from './types.js';
@@ -45,12 +41,12 @@ export const GroupByServiceExtension: DataViewExtensionType = {
   },
 };
 
-export function GroupByExtension(config: GroupByConfig): ExtensionType {
-  return DataViewExtension({
+export function GroupByExtension(config: GroupByConfig): DataViewExtensionType {
+  return {
     setup({ di }) {
       di.addValue(GroupByConfigProvider(config.name), config);
     },
-  });
+  };
 }
 
 export const getGroupByService = (dataSource: DataSource) => {

@@ -1,7 +1,7 @@
 import { createIdentifier } from '@blocksuite/global/di';
 import { type Signal, signal } from '@preact/signals-core';
 
-import { DataViewExtension } from '../../core';
+import { type DataViewExtensionType } from '../../core';
 
 export const ShowQuickSettingBarKey = createIdentifier<
   Signal<Record<string, boolean>>
@@ -13,10 +13,10 @@ export const createDefaultShowQuickSettingBar = () => {
 
 export function QuickSettingsBarExtension(
   value: Signal<Record<string, boolean>>
-) {
-  return DataViewExtension({
+): DataViewExtensionType {
+  return {
     setup({ di }) {
       di.addValue(ShowQuickSettingBarKey, value, { override: true });
     },
-  });
+  };
 }

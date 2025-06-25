@@ -14,8 +14,8 @@ import {
   type DatabaseFlags,
   DataSourceBase,
   type DataViewDataType,
-  DataViewExtensionIdentifier,
   type DataViewExtensionType,
+  getDataViewExtensions,
   type PropertyMetaConfig,
   type TypeInstance,
   type ViewManager,
@@ -23,6 +23,7 @@ import {
   type ViewMeta,
 } from '@blocksuite/data-view';
 import { propertyPresets } from '@blocksuite/data-view/property-presets';
+import { WidgetPresetExtensions } from '@blocksuite/data-view/widget-presets';
 import { IS_MOBILE } from '@blocksuite/global/env';
 import { BlockSuiteError, ErrorCode } from '@blocksuite/global/exceptions';
 import type { EditorHost } from '@blocksuite/std';
@@ -32,6 +33,7 @@ import { computed, type ReadonlySignal, signal } from '@preact/signals-core';
 import { getIcon } from './block-icons.js';
 import {
   databaseBlockProperties,
+  DatabaseBlockPropertyExtensions,
   databasePropertyConverts,
 } from './properties/index.js';
 import {
@@ -59,6 +61,18 @@ type SpecialProperty = {
   valueGet: (rowId: string, propertyId: string) => unknown;
 };
 
+export const DefaultDatabaseBlockExtensions: DataViewExtensionType[] = [
+  ...DatabaseBlockPropertyExtensions,
+  ...WidgetPresetExtensions,
+];
+
+export type DatabaseDataSourceConfig = {
+  model: DatabaseBlockModel;
+  /**
+   * Note: `DatabaseBlockDataSource` comes with a set of default extensions.
+   */
+  extensions?: DataViewExtensionType[];
+};
 export class DatabaseBlockDataSource extends DataSourceBase {
   override get parentProvider() {
     return this._model.store.provider;
@@ -200,18 +214,10 @@ export class DatabaseBlockDataSource extends DataSourceBase {
     );
   });
 
-  constructor({
-    model,
-    extensions,
-    init,
-  }: {
-    model: DatabaseBlockModel;
-    extensions?: DataViewExtensionType[];
-    init?: (dataSource: DatabaseBlockDataSource) => void;
-  }) {
-    super(extensions);
+  constructor({ model, extensions = [] }: DatabaseDataSourceConfig) {
+    super();
     this._model = model; // ensure invariants first
-    this.init(init);
+    this.init([...DefaultDatabaseBlockExtensions, ...extensions]);
   }
 
   private _runCapture() {
@@ -666,12 +672,9 @@ export const convertToDatabase = (host: EditorHost, viewType: string) => {
     return;
   }
 
-  const extensions = Array.from(
-    host.std.provider.getAll(DataViewExtensionIdentifier).values()
-  );
   const datasource = new DatabaseBlockDataSource({
     model: databaseModel,
-    extensions,
+    extensions: getDataViewExtensions(host.std.provider),
   });
   datasource.viewManager.viewAdd(viewType);
   host.store.moveBlocks(selectedModels, databaseModel);

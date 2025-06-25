@@ -2,9 +2,8 @@ import {
   createIdentifier,
   type ServiceIdentifier,
 } from '@blocksuite/global/di';
-import type { ExtensionType } from '@blocksuite/store';
 
-import { type DataSource } from '../data-source';
+import type { DataSource } from '../data-source/source';
 import type { GetPropertyMetaConfigFromModel } from '../property';
 import type { ConvertFunction, PropertyConvert } from '../property/convert';
 import type {
@@ -12,7 +11,6 @@ import type {
   PropertyModel,
 } from '../property/property-config';
 import {
-  DataViewExtension,
   type DataViewExtensionContext,
   type DataViewExtensionType,
 } from './dataview';
@@ -54,12 +52,13 @@ export type PropertyExtensionConfig<Model extends AnyPropertyModel> = {
  */
 export function PropertyExtension<
   Model extends PropertyModel<any, any, any, any>,
->(model: Model, config: PropertyExtensionConfig<Model>): ExtensionType {
+>(model: Model, config: PropertyExtensionConfig<Model>): DataViewExtensionType {
   let effectRan = false;
   const identifier = PropertyMetaConfigIdentifier(model.type);
-  return DataViewExtension({
+
+  return {
     name: `PropertyExtension(${model.type})`,
-    setup(context) {
+    setup(context): void {
       const di = context.di;
 
       if (!effectRan) {
@@ -78,7 +77,7 @@ export function PropertyExtension<
 
       config.setup?.(context);
     },
-  });
+  };
 }
 
 export function getPropertyConvertIdentifier(
@@ -107,7 +106,7 @@ export class PropertyManager {
 }
 
 export const PropertyManagerExtension: DataViewExtensionType = {
-  setup({ di, dataSource }) {
+  setup({ di, dataSource }: DataViewExtensionContext): void {
     di.addValue(PropertyManager, new PropertyManager(dataSource));
   },
 };

@@ -1,8 +1,8 @@
+import { type DataViewExtensionType } from '@blocksuite/data-view';
 import {
   PropertyPresetExtensions,
   propertyPresets,
 } from '@blocksuite/data-view/property-presets';
-import type { ExtensionType } from '@blocksuite/store';
 
 import { createdTimeColumnConfig } from './created-time/cell-renderer.js';
 import { CreatedTimePropertyExtension } from './created-time/extension.js';
@@ -37,7 +37,7 @@ export const databaseBlockProperties = {
   createdTimeColumnConfig,
 };
 
-export const DatabaseBlockPropertyExtensions: ExtensionType[] = [
+export const DatabaseBlockPropertyExtensions: DataViewExtensionType[] = [
   PropertyPresetExtensions.NumberPropertyExtension,
   PropertyPresetExtensions.ProgressPropertyExtension,
   PropertyPresetExtensions.MultiSelectPropertyExtension,

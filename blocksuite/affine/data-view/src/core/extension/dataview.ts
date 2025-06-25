@@ -7,9 +7,11 @@ import type { ExtensionType } from '@blocksuite/store';
 
 import { type DataSource } from '../data-source/source';
 
-export interface DataViewExtensionContext {
+export interface DataViewExtensionContext<
+  Source extends DataSource = DataSource,
+> {
   di: Container;
-  dataSource: DataSource;
+  dataSource: Source;
 }
 
 export function createDataViewExtensionContext(
@@ -42,13 +44,12 @@ export function createDataViewExtensionContext(
  * const dataSource = new MyDataSource([ Ext ]);
  * ```
  */
-export interface DataViewExtensionType {
+export type DataViewExtensionType = {
   name?: string;
-  setup(di: DataViewExtensionContext): void;
-}
+  setup: (context: DataViewExtensionContext) => void;
+};
 
 let id = 1;
-
 /**
  * Helper function to create a `ExtensionType` for a DataViewExtension.
  */
@@ -58,9 +59,7 @@ export function DataViewExtension(
   return {
     setup(di) {
       di.addValue(
-        DataViewExtensionIdentifier(
-          `DataViewExtension(${id++}, ${extension.name ?? 'unknown'})`
-        ),
+        DataViewExtensionIdentifier(`DataViewExtension(${id++})`),
         extension
       );
     },

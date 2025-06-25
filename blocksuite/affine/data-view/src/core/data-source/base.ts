@@ -83,25 +83,23 @@ export abstract class DataSourceBase implements DataSource {
     return getPropertyManager(this);
   }
 
-  constructor(protected _userExtensions: DataViewExtensionType[] = []) {}
+  constructor() {}
 
-  protected init(init?: (source: this) => void) {
+  protected init(extensions: DataViewExtensionType[] = []) {
     if (this._provider) {
       throw new Error('DataSource is already initialized.');
     }
 
-    // extensions use this
+    // add this
     this.serviceSet(DataSourceIdentifier, this);
 
-    this._loadDataViewExtensions();
-
-    init?.(this);
+    this._loadDataViewExtensions(extensions);
 
     this._provider = this.container.provider(undefined, this.parentProvider);
   }
 
-  private _loadDataViewExtensions() {
-    const extensions = [...CoreDataviewExtensions, ...this._userExtensions];
+  private _loadDataViewExtensions(userExtensions: DataViewExtensionType[]) {
+    const extensions = [...CoreDataviewExtensions, ...userExtensions];
     const context = createDataViewExtensionContext(this.container, this);
     extensions.forEach(extension => {
       extension.setup(context);
@@ -111,7 +109,7 @@ export abstract class DataSourceBase implements DataSource {
   get provider() {
     if (!this._provider) {
       throw new Error(
-        'Datasource must be initialized before getting provider.'
+        'Datasource must be initialized with init() before getting provider.'
       );
     }
     return this._provider;

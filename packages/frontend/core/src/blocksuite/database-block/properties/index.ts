@@ -1,4 +1,7 @@
-import type { PropertyMetaConfig } from '@blocksuite/affine/blocks/database';
+import type {
+  DataViewExtensionType,
+  PropertyMetaConfig,
+} from '@blocksuite/affine/blocks/database';
 
 import { CreatedByPropertyExtension } from './created-by/extension';
 import { createdByPropertyConfig } from './created-by/view';
@@ -13,7 +16,7 @@ export const propertiesPresets: PropertyMetaConfig<string, any, any, any>[] = [
   createdByPropertyConfig,
 ];
 
-export const AffineDatabasePropertyExtensions = [
+export const AffineDatabasePropertyExtensions: DataViewExtensionType[] = [
   MemberPropertyExtension,
   FilePropertyExtension,
   CreatedByPropertyExtension,
