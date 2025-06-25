@@ -19,14 +19,13 @@ import { getDropResult } from '@blocksuite/affine-widget-drag-handle';
 import {
   createRecordDetail,
   createUniComponentFromWebComponent,
-  DataViewExtensionIdentifier,
   DataViewRootUILogic,
   type DataViewSelection,
   type DataViewUILogicBase,
   type DataViewWidget,
   type DataViewWidgetProps,
   defineUniComponent,
-  GroupByConfigProvider,
+  getDataViewExtensions,
   lazy,
   renderUniLit,
   type SingleView,
@@ -122,21 +121,14 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<DatabaseBloc
   };
 
   private readonly dataSource = lazy(() => {
-    const extensions = Array.from(
-      this.std.provider.getAll(DataViewExtensionIdentifier).values()
-    );
-
+    const extensions = getDataViewExtensions(this.std.provider);
     const dataSource = new DatabaseBlockDataSource({
       model: this.model,
-      extensions: extensions,
+      extensions,
       init: dataSource => {
         dataSource.serviceSet(EditorHostKey, this.host);
-        this.std.provider.getAll(GroupByConfigProvider).forEach(config => {
-          dataSource.serviceSet(GroupByConfigProvider(config.name), config);
-        });
       },
     });
-
     const id = currentViewStorage.getCurrentView(this.model.id);
     if (id && dataSource.viewManager.viewGet(id)) {
       dataSource.viewManager.setCurrentView(id);

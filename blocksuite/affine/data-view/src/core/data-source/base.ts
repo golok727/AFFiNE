@@ -11,13 +11,14 @@ import {
   createDataViewExtensionContext,
   type DataViewExtensionType,
 } from '../extension/dataview.js';
+import { getPropertyManager } from '../extension/property.js';
 import type { TypeInstance } from '../logical/type.js';
 import type { PropertyMetaConfig } from '../property/property-config.js';
 import type { DatabaseFlags } from '../types.js';
 import type { ViewConvertConfig } from '../view/convert.js';
 import type { DataViewDataType, ViewMeta } from '../view/data-view.js';
 import type { ViewManager } from '../view-manager/view-manager.js';
-import { DataSourceIdentifier, DataSourceScope } from './consts.js';
+import { DataSourceIdentifier } from './consts.js';
 import { CoreDataviewExtensions } from './extensions.js';
 import type { DataSource } from './source.js';
 
@@ -78,6 +79,10 @@ export abstract class DataSourceBase implements DataSource {
   protected container = new Container();
   protected _provider: ServiceProvider | null = null;
 
+  get propertyManager() {
+    return getPropertyManager(this);
+  }
+
   constructor(protected _userExtensions: DataViewExtensionType[] = []) {}
 
   protected init(init?: (source: this) => void) {
@@ -92,10 +97,7 @@ export abstract class DataSourceBase implements DataSource {
 
     init?.(this);
 
-    this._provider = this.container.provider(
-      DataSourceScope,
-      this.parentProvider
-    );
+    this._provider = this.container.provider(undefined, this.parentProvider);
   }
 
   private _loadDataViewExtensions() {
@@ -108,7 +110,9 @@ export abstract class DataSourceBase implements DataSource {
 
   get provider() {
     if (!this._provider) {
-      throw new Error('please call init() before using provider');
+      throw new Error(
+        'Datasource must be initialized before getting provider.'
+      );
     }
     return this._provider;
   }
@@ -123,17 +127,7 @@ export abstract class DataSourceBase implements DataSource {
         'DataSource is already initialized, cannot set service after initialization.'
       );
     }
-    this.container.addValue(key, value, { scope: DataSourceScope });
-  }
-
-  serviceGetOrCreate<T>(key: GeneralServiceIdentifier<T>, create: () => T): T {
-    const result = this.serviceGet(key);
-    if (result !== null) {
-      return result;
-    }
-    const value = create();
-    this.serviceSet(key, value);
-    return value;
+    this.container.addValue(key, value);
   }
 
   abstract propertyAdd(

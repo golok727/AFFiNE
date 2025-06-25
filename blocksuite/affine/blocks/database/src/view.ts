@@ -5,7 +5,6 @@ import {
 } from '@blocksuite/affine-ext-loader';
 import { DatabaseBlockModel } from '@blocksuite/affine-model';
 import { SlashMenuConfigExtension } from '@blocksuite/affine-widget-slash-menu';
-import { PropertyPresetExtensions } from '@blocksuite/data-view/property-presets';
 import { WidgetPresetExtensions } from '@blocksuite/data-view/widget-presets';
 import { BlockViewExtension, FlavourExtension } from '@blocksuite/std';
 import { literal } from 'lit/static-html.js';
@@ -14,6 +13,7 @@ import { z } from 'zod';
 import { DatabaseConfigExtension } from './config';
 import { databaseSlashMenuConfig } from './configs/slash-menu.js';
 import { effects } from './effects';
+import { DatabaseBlockPropertyExtensions } from './properties';
 
 const optionsSchema = z.object({
   configure: z
@@ -49,7 +49,7 @@ export class DatabaseViewExtension extends ViewExtensionProvider<DatabaseViewExt
         DatabaseConfigExtension({ configure: options.configure })
       );
     }
-    context.register(PropertyPresetExtensions);
+    context.register(DatabaseBlockPropertyExtensions);
     context.register(WidgetPresetExtensions);
   }
 }

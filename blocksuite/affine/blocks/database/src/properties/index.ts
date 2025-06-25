@@ -1,9 +1,17 @@
-import { propertyPresets } from '@blocksuite/data-view/property-presets';
+import {
+  PropertyPresetExtensions,
+  propertyPresets,
+} from '@blocksuite/data-view/property-presets';
+import type { ExtensionType } from '@blocksuite/store';
 
 import { createdTimeColumnConfig } from './created-time/cell-renderer.js';
+import { CreatedTimePropertyExtension } from './created-time/extension.js';
 import { linkColumnConfig } from './link/cell-renderer.js';
+import { LinkPropertyExtension } from './link/extension.js';
 import { richTextColumnConfig } from './rich-text/cell-renderer.js';
+import { RichTextPropertyExtension } from './rich-text/extension.js';
 import { titleColumnConfig } from './title/cell-renderer.js';
+import { TitlePropertyExtension } from './title/extension.js';
 
 export * from './converts.js';
 const {
@@ -14,6 +22,7 @@ const {
   progressPropertyConfig,
   selectPropertyConfig,
 } = propertyPresets;
+
 export const databaseBlockProperties = {
   checkboxColumnConfig: checkboxPropertyConfig,
   dateColumnConfig: datePropertyConfig,
@@ -27,3 +36,17 @@ export const databaseBlockProperties = {
   titleColumnConfig,
   createdTimeColumnConfig,
 };
+
+export const DatabaseBlockPropertyExtensions: ExtensionType[] = [
+  PropertyPresetExtensions.NumberPropertyExtension,
+  PropertyPresetExtensions.ProgressPropertyExtension,
+  PropertyPresetExtensions.MultiSelectPropertyExtension,
+  PropertyPresetExtensions.SelectPropertyExtension,
+  PropertyPresetExtensions.DatePropertyExtension,
+  PropertyPresetExtensions.CheckBoxPropertyExtension,
+  PropertyPresetExtensions.ImagePropertyExtension,
+  RichTextPropertyExtension,
+  TitlePropertyExtension,
+  CreatedTimePropertyExtension,
+  LinkPropertyExtension,
+];

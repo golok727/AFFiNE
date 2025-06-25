@@ -69,6 +69,8 @@ export class BlockQueryDataSource extends DataSourceBase {
     config: BlockQueryDataSourceConfig
   ) {
     super();
+    this.init();
+
     this.meta = blockMetaMap[config.type];
     for (const property of this.meta.properties) {
       this.columnMetaMap.set(property.metaConfig.type, property.metaConfig);

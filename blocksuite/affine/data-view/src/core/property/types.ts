@@ -1,7 +1,7 @@
 import type { Disposable } from '@blocksuite/global/disposable';
 import type { ZodType } from 'zod';
 
-import type { DataSource } from '../data-source/base.js';
+import type { DataSource } from '../data-source/source.js';
 import type { TypeInstance } from '../logical/type.js';
 import type { PropertyModel } from './property-config.js';
 

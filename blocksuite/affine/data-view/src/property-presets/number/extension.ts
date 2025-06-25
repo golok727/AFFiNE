@@ -6,7 +6,7 @@ import { progressPropertyModelConfig } from '../progress/define';
 import { numberPropertyConfig } from './cell-renderer';
 import { numberPropertyModelConfig } from './define';
 
-const numberConverts = [
+const converts = [
   createPropertyConvert(
     numberPropertyModelConfig,
     progressPropertyModelConfig,
@@ -21,9 +21,9 @@ export const NumberPropertyExtension = PropertyExtension(
   numberPropertyModelConfig,
   {
     meta: numberPropertyConfig,
-    converts: [...numberConverts],
+    converts,
     effect() {
-      console.log('effect ran');
+      console.log('Number effect ran');
     },
   }
 );

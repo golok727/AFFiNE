@@ -1,20 +1,14 @@
-import { type Container, createIdentifier } from '@blocksuite/global/di';
+import {
+  type Container,
+  createIdentifier,
+  type ServiceProvider,
+} from '@blocksuite/global/di';
 import type { ExtensionType } from '@blocksuite/store';
 
-import { DataSourceScope } from '../data-source/consts.js';
 import { type DataSource } from '../data-source/source';
 
-export interface ContainerLike {
-  add: Container['add'];
-  addImpl: Container['addImpl'];
-  override: Container['override'];
-  scope: Container['scope'];
-  addValue: Container['addValue'];
-}
-
 export interface DataViewExtensionContext {
-  // scoped to dataview
-  di: ContainerLike;
+  di: Container;
   dataSource: DataSource;
 }
 
@@ -23,30 +17,41 @@ export function createDataViewExtensionContext(
   dataSource: DataSource
 ): DataViewExtensionContext {
   return {
-    di: createDataSourceScopedContainer(container),
+    di: container,
     dataSource,
   };
 }
 
-function createDataSourceScopedContainer(container: Container): ContainerLike {
-  const scopedContainer = container.scope(DataSourceScope);
-  return {
-    ...scopedContainer,
-    addValue(identifier, value, options): void {
-      return container.addValue(identifier, value, {
-        ...options,
-        scope: DataSourceScope,
-      });
-    },
-  };
-}
-
+/**
+ *  Dataview Extensions are allows to register a service into a container belonging to a datasource.
+ * ```ts
+ *
+ * const Ext: DataViewExtensionType = {
+ *  name: 'MyExtension',
+ *  setup({ di, dataSource }) {
+ *  // add a service to the data source's container
+ *  di.addValue(MyService, new MyService(dataSource));
+ *  }
+ * }
+ *
+ * class MyDataSource extends DataSourceBase {
+ *  constructor(extensions: DataViewExtensionType[]) {
+ *   super(extensions)
+ *  }
+ * }
+ * const dataSource = new MyDataSource([ Ext ]);
+ * ```
+ */
 export interface DataViewExtensionType {
   name?: string;
   setup(di: DataViewExtensionContext): void;
 }
 
 let id = 1;
+
+/**
+ * Helper function to create a `ExtensionType` for a DataViewExtension.
+ */
 export function DataViewExtension(
   extension: DataViewExtensionType
 ): ExtensionType {
@@ -60,6 +65,12 @@ export function DataViewExtension(
       );
     },
   };
+}
+
+export function getDataViewExtensions(
+  provider: ServiceProvider
+): DataViewExtensionType[] {
+  return Array.from(provider.getAll(DataViewExtensionIdentifier).values());
 }
 
 export const DataViewExtensionIdentifier =
