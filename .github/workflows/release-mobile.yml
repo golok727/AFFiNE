@@ -117,7 +117,7 @@ jobs:
           package: 'affine_mobile_native'
           no-build: 'true'
       - name: Testflight
-        if: ${{ env.BUILD_TYPE == 'beta' }}
+        if: ${{ env.BUILD_TYPE != 'stable' }}
         working-directory: packages/frontend/apps/ios/App
         run: |
           echo -n "${{ env.BUILD_PROVISION_PROFILE }}" | base64 --decode -o $PP_PATH
@@ -175,7 +175,6 @@ jobs:
       - name: Auth gcloud
         id: auth
         uses: google-github-actions/auth@v2
-        if: ${{ env.BUILD_TYPE != 'canary' }}
         with:
           workload_identity_provider: 'projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-actions/providers/github-actions-helm-deploy'
           service_account: '${{ secrets.GCP_HELM_DEPLOY_SERVICE_ACCOUNT }}'
@@ -189,7 +188,6 @@ jobs:
           cache: 'gradle'
       - name: Auto increment version code
         id: bump
-        if: ${{ env.BUILD_TYPE != 'canary' }}
         run: yarn affine @affine/playstore-auto-bump bump
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
@@ -204,7 +202,6 @@ jobs:
           VERSION_NAME: ${{ inputs.app-version }}
       - name: Upload to Google Play
         uses: r0adkll/upload-google-play@v1
-        if: ${{ env.BUILD_TYPE != 'canary' }}
         with:
           serviceAccountJson: ${{ steps.auth.outputs.credentials_file_path }}
           packageName: app.affine.pro
