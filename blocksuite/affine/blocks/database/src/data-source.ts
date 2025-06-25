@@ -1,8 +1,8 @@
-import type {
-  ColumnDataType,
-  ColumnUpdater,
+import {
+  type ColumnDataType,
+  type ColumnUpdater,
   DatabaseBlockModel,
-  ParagraphBlockModel,
+  type ParagraphBlockModel,
 } from '@blocksuite/affine-model';
 import { getSelectedModelsCommand } from '@blocksuite/affine-shared/commands';
 import { FeatureFlagService } from '@blocksuite/affine-shared/services';
@@ -214,8 +214,20 @@ export class DatabaseBlockDataSource extends DataSourceBase {
     );
   });
 
-  constructor({ model, extensions = [] }: DatabaseDataSourceConfig) {
+  constructor(modelOrConfig: DatabaseDataSourceConfig | DatabaseBlockModel) {
     super();
+
+    if (modelOrConfig instanceof DatabaseBlockModel) {
+      console.warn(
+        '`new DatabaseBlockDataSource(model)` is deprecated, please use `new DatabaseBlockDataSource({ model })` instead.'
+      );
+    }
+
+    let { model, extensions = [] } =
+      modelOrConfig instanceof DatabaseBlockModel
+        ? { model: modelOrConfig }
+        : modelOrConfig;
+
     this._model = model; // ensure invariants first
     this.init([...DefaultDatabaseBlockExtensions, ...extensions]);
   }

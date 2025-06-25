@@ -7,25 +7,21 @@ import type { ExtensionType } from '@blocksuite/store';
 
 import { type DataSource } from '../data-source/source';
 
-export interface DataViewExtensionContext<
-  Source extends DataSource = DataSource,
-> {
+export interface DataViewExtensionContext {
   di: Container;
-  dataSource: Source;
 }
 
 export function createDataViewExtensionContext(
   container: Container,
-  dataSource: DataSource
+  _dataSource: DataSource
 ): DataViewExtensionContext {
   return {
     di: container,
-    dataSource,
   };
 }
 
 /**
- *  Dataview Extensions are allows to register a service into a container belonging to a datasource.
+ *  Dataview Extensions are allows to register a service into a container belonging to a datasource. which provides a dataSource through datasource key
  * ```ts
  *
  * const Ext: DataViewExtensionType = {

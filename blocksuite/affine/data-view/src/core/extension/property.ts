@@ -3,6 +3,7 @@ import {
   type ServiceIdentifier,
 } from '@blocksuite/global/di';
 
+import { DataSourceIdentifier } from '../data-source/consts';
 import type { DataSource } from '../data-source/source';
 import type { GetPropertyMetaConfigFromModel } from '../property';
 import type { ConvertFunction, PropertyConvert } from '../property/convert';
@@ -106,8 +107,8 @@ export class PropertyManager {
 }
 
 export const PropertyManagerExtension: DataViewExtensionType = {
-  setup({ di, dataSource }: DataViewExtensionContext): void {
-    di.addValue(PropertyManager, new PropertyManager(dataSource));
+  setup({ di }: DataViewExtensionContext): void {
+    di.add(PropertyManager, [DataSourceIdentifier]);
   },
 };
 

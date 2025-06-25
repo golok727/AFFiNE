@@ -83,8 +83,6 @@ export abstract class DataSourceBase implements DataSource {
     return getPropertyManager(this);
   }
 
-  constructor() {}
-
   protected init(extensions: DataViewExtensionType[] = []) {
     if (this._provider) {
       throw new Error('DataSource is already initialized.');
@@ -116,7 +114,7 @@ export abstract class DataSourceBase implements DataSource {
   }
 
   serviceGet<T>(key: GeneralServiceIdentifier<T>): T | null {
-    return this.provider.getOptional(key) ?? null;
+    return this.provider.getOptional(key);
   }
 
   serviceSet<T>(key: GeneralServiceIdentifier<T>, value: T): void {
