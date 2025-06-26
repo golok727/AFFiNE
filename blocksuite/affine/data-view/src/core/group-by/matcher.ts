@@ -1,6 +1,6 @@
 import { createIdentifier } from '@blocksuite/global/di';
 
-import { DataSourceIdentifier } from '../data-source/consts.js';
+import { DataSourceKey } from '../data-source/consts.js';
 import { type DataSource } from '../data-source/source.js';
 import { type DataViewExtensionType } from '../extension/dataview.js';
 import { Matcher_ } from '../logical/matcher.js';
@@ -31,12 +31,15 @@ export class GroupByService {
 export const GroupByProvider =
   createIdentifier<GroupByService>('GroupByService');
 
+/**
+ * @internal
+ */
 export const GroupByServiceExtension: DataViewExtensionType = {
   name: 'GroupByServiceExtension',
   setup({ di }) {
     di.addImpl(
       GroupByProvider,
-      provider => new GroupByService(provider.get(DataSourceIdentifier))
+      provider => new GroupByService(provider.get(DataSourceKey))
     );
   },
 };

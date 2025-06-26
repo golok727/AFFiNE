@@ -22,8 +22,5 @@ export const NumberPropertyExtension = PropertyExtension(
   {
     meta: numberPropertyConfig,
     converts,
-    effect() {
-      console.log('Number effect ran');
-    },
   }
 );

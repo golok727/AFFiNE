@@ -54,7 +54,7 @@ export interface SingleView {
   rowAdd(insertPosition: InsertToPosition): string;
   rowsDelete(rows: string[]): void;
 
-  readonly propertyMetas$: ReadonlySignal<PropertyMetaConfig[]>;
+  readonly propertyMetas: PropertyMetaConfig[];
 
   propertyAdd(
     toAfterOfProperty: InsertToPosition,
@@ -172,8 +172,8 @@ export abstract class SingleViewBase<
     return this.dataSource.viewMetaGet(this.type);
   }
 
-  get propertyMetas$() {
-    return this.dataSource.propertyMetas$;
+  get propertyMetas() {
+    return this.dataSource.propertyMetas;
   }
 
   abstract get type(): string;

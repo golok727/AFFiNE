@@ -19,8 +19,5 @@ export const SelectPropertyExtension = PropertyExtension(
   {
     meta: selectPropertyConfig,
     converts,
-    effect() {
-      console.log('Select Property effect ran');
-    },
   }
 );

@@ -22,8 +22,5 @@ export const ProgressPropertyExtension = PropertyExtension(
   {
     meta: progressPropertyConfig,
     converts,
-    effect() {
-      console.log('Progress Property effect ran');
-    },
   }
 );

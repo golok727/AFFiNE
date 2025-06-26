@@ -3,7 +3,7 @@ import {
   type ServiceIdentifier,
 } from '@blocksuite/global/di';
 
-import { DataSourceIdentifier } from '../data-source/consts';
+import { DataSourceKey } from '../data-source/consts';
 import type { DataSource } from '../data-source/source';
 import type { GetPropertyMetaConfigFromModel } from '../property';
 import type { ConvertFunction, PropertyConvert } from '../property/convert';
@@ -16,9 +16,10 @@ import {
   type DataViewExtensionType,
 } from './dataview';
 
-export const PropertyMetaConfigIdentifier =
-  createIdentifier<PropertyMetaConfig>('DataViewPropertyMetaConfig');
-export const PropertyConvertIdentifier = createIdentifier<ConvertFunction>(
+export const PropertyMetaConfigKey = createIdentifier<PropertyMetaConfig>(
+  'DataViewPropertyMetaConfig'
+);
+export const PropertyConvertKey = createIdentifier<ConvertFunction>(
   'DataViewPropertyConvert'
 );
 
@@ -55,7 +56,7 @@ export function PropertyExtension<
   Model extends PropertyModel<any, any, any, any>,
 >(model: Model, config: PropertyExtensionConfig<Model>): DataViewExtensionType {
   let effectRan = false;
-  const identifier = PropertyMetaConfigIdentifier(model.type);
+  const identifier = getPropertyMetaKeyForType(model.type);
 
   return {
     name: `PropertyExtension(${model.type})`,
@@ -71,7 +72,7 @@ export function PropertyExtension<
 
       config.converts?.forEach(convert => {
         di.addValue(
-          getPropertyConvertIdentifier(convert.from, convert.to),
+          getPropertyConvertKey(convert.from, convert.to),
           convert.convert
         );
       });
@@ -81,34 +82,35 @@ export function PropertyExtension<
   };
 }
 
-export function getPropertyConvertIdentifier(
-  from: string,
-  to: string
-): ServiceIdentifier<ConvertFunction> {
-  return PropertyConvertIdentifier(`${from}-${to}`);
-}
-
 export class PropertyManager {
   constructor(private readonly dataSource: DataSource) {}
 
+  getPropertyMeta(type: string): PropertyMetaConfig | null {
+    return this.dataSource.provider.getOptional(
+      getPropertyMetaKeyForType(type)
+    );
+  }
+
   getAllPropertyMeta(): PropertyMetaConfig[] {
     return Array.from(
-      this.dataSource.provider.getAll(PropertyMetaConfigIdentifier).values()
+      this.dataSource.provider.getAll(PropertyMetaConfigKey).values()
     );
   }
 
   getConvertFunction(from: string, to: string): ConvertFunction | null {
     return (
-      this.dataSource.provider.getOptional(
-        getPropertyConvertIdentifier(from, to)
-      ) ?? null
+      this.dataSource.provider.getOptional(getPropertyConvertKey(from, to)) ??
+      null
     );
   }
 }
 
+/**
+ * @internal
+ */
 export const PropertyManagerExtension: DataViewExtensionType = {
   setup({ di }: DataViewExtensionContext): void {
-    di.add(PropertyManager, [DataSourceIdentifier]);
+    di.add(PropertyManager, [DataSourceKey]);
   },
 };
 
@@ -118,4 +120,15 @@ export function getPropertyManager(dataSource: DataSource): PropertyManager {
     throw new Error('PropertyManager is not available for this data source');
   }
   return mgr;
+}
+
+export function getPropertyConvertKey(
+  from: string,
+  to: string
+): ServiceIdentifier<ConvertFunction> {
+  return PropertyConvertKey(`${from}-${to}`);
+}
+
+export function getPropertyMetaKeyForType(type: string) {
+  return PropertyMetaConfigKey(type);
 }

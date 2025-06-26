@@ -29,8 +29,8 @@ export interface DataSource {
   rowDelete(ids: string[]): void;
   rowMove(rowId: string, position: InsertToPosition): void;
 
-  propertyMetas$: ReadonlySignal<PropertyMetaConfig[]>;
-  allPropertyMetas$: ReadonlySignal<PropertyMetaConfig[]>;
+  readonly propertyMetas: PropertyMetaConfig[];
+  readonly allPropertyMetas: PropertyMetaConfig[];
 
   propertyNameGet$(propertyId: string): ReadonlySignal<string | undefined>;
   propertyNameGet(propertyId: string): string;

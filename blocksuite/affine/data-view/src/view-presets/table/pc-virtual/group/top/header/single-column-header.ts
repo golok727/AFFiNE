@@ -80,7 +80,7 @@ export class DatabaseHeaderColumn extends SignalWatcher(
     event.stopPropagation();
     popMenu(popupTargetFromElement(this), {
       options: {
-        items: this.tableViewManager.propertyMetas$.value.map(config => {
+        items: this.tableViewManager.propertyMetas.map(config => {
           return menu.action({
             name: config.config.name,
             isSelected: config.type === this.column.type$.value,

@@ -19,8 +19,5 @@ export const MultiSelectPropertyExtension = PropertyExtension(
   {
     meta: multiSelectPropertyConfig,
     converts,
-    effect() {
-      console.log('MultiSelect effect ran');
-    },
   }
 );

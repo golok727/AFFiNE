@@ -34,7 +34,6 @@ import { getIcon } from './block-icons.js';
 import {
   databaseBlockProperties,
   DatabaseBlockPropertyExtensions,
-  databasePropertyConverts,
 } from './properties/index.js';
 import {
   addProperty,
@@ -69,7 +68,7 @@ export const DefaultDatabaseBlockExtensions: DataViewExtensionType[] = [
 export type DatabaseDataSourceConfig = {
   model: DatabaseBlockModel;
   /**
-   * Note: `DatabaseBlockDataSource` comes with a set of default extensions.
+   * Note: `DatabaseBlockDataSource` comes with a set of default extensions. eg properties, converts etc..
    */
   extensions?: DataViewExtensionType[];
 };
@@ -165,7 +164,7 @@ export class DatabaseBlockDataSource extends DataSourceBase {
   });
 
   properties$: ReadonlySignal<string[]> = computed(() => {
-    const fixedPropertiesSet = new Set(this.fixedProperties$.value);
+    const fixedPropertiesSet = new Set(this.fixedProperties);
     const properties: string[] = [];
     this._model.props.columns$.value.forEach(column => {
       if (fixedPropertiesSet.has(column.type)) {
@@ -204,24 +203,8 @@ export class DatabaseBlockDataSource extends DataSourceBase {
     return this._model.store;
   }
 
-  allPropertyMetas$ = computed<PropertyMetaConfig<any, any, any, any>[]>(() => {
-    return DatabaseBlockDataSource.propertiesList.value;
-  });
-
-  propertyMetas$ = computed<PropertyMetaConfig[]>(() => {
-    return this.allPropertyMetas$.value.filter(
-      v => !v.config.fixed && !v.config.hide
-    );
-  });
-
   constructor(modelOrConfig: DatabaseDataSourceConfig | DatabaseBlockModel) {
     super();
-
-    if (modelOrConfig instanceof DatabaseBlockModel) {
-      console.warn(
-        '`new DatabaseBlockDataSource(model)` is deprecated, please use `new DatabaseBlockDataSource({ model })` instead.'
-      );
-    }
 
     let { model, extensions = [] } =
       modelOrConfig instanceof DatabaseBlockModel
@@ -229,7 +212,8 @@ export class DatabaseBlockDataSource extends DataSourceBase {
         : modelOrConfig;
 
     this._model = model; // ensure invariants first
-    this.init([...DefaultDatabaseBlockExtensions, ...extensions]);
+
+    this.configure([...DefaultDatabaseBlockExtensions, ...extensions]); // then initialize
   }
 
   private _runCapture() {
@@ -486,10 +470,6 @@ export class DatabaseBlockDataSource extends DataSourceBase {
     return id;
   }
 
-  propertyMetaGet(type: string): PropertyMetaConfig | undefined {
-    return DatabaseBlockDataSource.propertiesMap.value[type];
-  }
-
   propertyNameGet(propertyId: string): string {
     if (propertyId === 'type') {
       return 'Block Type';
@@ -530,15 +510,23 @@ export class DatabaseBlockDataSource extends DataSourceBase {
     if (!meta) {
       return;
     }
+
     const currentType = this.propertyTypeGet(propertyId);
     const currentData = this.propertyDataGet(propertyId);
     const rows = this.rows$.value;
     const currentCells = rows.map(rowId =>
       this.cellValueGet(rowId, propertyId)
     );
-    const convertFunction = databasePropertyConverts.find(
-      v => v.from === currentType && v.to === toType
-    )?.convert;
+
+    const getConvertFunction = () => {
+      if (!currentType) return undefined;
+      return (
+        this.propertyManager.getConvertFunction(currentType, toType) ??
+        undefined
+      );
+    };
+
+    const convertFunction = getConvertFunction();
     const result = convertFunction?.(
       currentData as any,
       currentCells as any

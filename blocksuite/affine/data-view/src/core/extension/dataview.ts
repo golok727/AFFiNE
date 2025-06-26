@@ -5,23 +5,36 @@ import {
 } from '@blocksuite/global/di';
 import type { ExtensionType } from '@blocksuite/store';
 
+import { DataSourceKey } from '../data-source/consts';
 import { type DataSource } from '../data-source/source';
 
 export interface DataViewExtensionContext {
   di: Container;
 }
 
+export function loadDataViewExtensions(
+  extensions: DataViewExtensionType[],
+  container: Container,
+  dataSource: DataSource
+) {
+  const context = createDataViewExtensionContext(container, dataSource);
+  for (const ext of extensions) {
+    ext.setup(context);
+  }
+}
+
 export function createDataViewExtensionContext(
   container: Container,
-  _dataSource: DataSource
+  dataSource: DataSource
 ): DataViewExtensionContext {
+  container.addValue(DataSourceKey, dataSource);
   return {
     di: container,
   };
 }
 
 /**
- *  Dataview Extensions are allows to register a service into a container belonging to a datasource. which provides a dataSource through datasource key
+ *  Dataview Extensions are allows to register a service into a container belonging to a datasource.
  * ```ts
  *
  * const Ext: DataViewExtensionType = {
@@ -34,13 +47,19 @@ export function createDataViewExtensionContext(
  *
  * class MyDataSource extends DataSourceBase {
  *  constructor(extensions: DataViewExtensionType[]) {
- *   super(extensions)
+ *   super()
+ *   // load invariants here
+ *   // then configure the data source with the extensions
+ *   this.configure(extensions)
  *  }
  * }
  * const dataSource = new MyDataSource([ Ext ]);
+ * expect(dataSource.serviceGet(DataSourceKey)).toBe(dataSource); // true
+ * expect(dataSource.serviceGet(MyService)).toBeInstanceOf(MyService); // true
  * ```
  */
 export type DataViewExtensionType = {
+  // for debugging purpose
   name?: string;
   setup: (context: DataViewExtensionContext) => void;
 };

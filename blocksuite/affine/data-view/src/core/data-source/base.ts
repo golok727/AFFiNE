@@ -8,8 +8,8 @@ import {
 import { computed, type ReadonlySignal } from '@preact/signals-core';
 
 import {
-  createDataViewExtensionContext,
   type DataViewExtensionType,
+  loadDataViewExtensions,
 } from '../extension/dataview.js';
 import { getPropertyManager } from '../extension/property.js';
 import type { TypeInstance } from '../logical/type.js';
@@ -18,7 +18,6 @@ import type { DatabaseFlags } from '../types.js';
 import type { ViewConvertConfig } from '../view/convert.js';
 import type { DataViewDataType, ViewMeta } from '../view/data-view.js';
 import type { ViewManager } from '../view-manager/view-manager.js';
-import { DataSourceIdentifier } from './consts.js';
 import { CoreDataviewExtensions } from './extensions.js';
 import type { DataSource } from './source.js';
 
@@ -33,15 +32,21 @@ export abstract class DataSourceBase implements DataSource {
     return !this.isFixedProperty(propertyId);
   }
 
+  get propertyMetas(): PropertyMetaConfig[] {
+    return this.propertyManager
+      .getAllPropertyMeta()
+      .filter(v => !v.config.fixed && !v.config.hide);
+  }
+
+  get allPropertyMetas(): PropertyMetaConfig[] {
+    return this.propertyManager.getAllPropertyMeta();
+  }
+
   abstract get parentProvider(): ServiceProvider;
 
   abstract featureFlags$: ReadonlySignal<DatabaseFlags>;
 
   abstract properties$: ReadonlySignal<string[]>;
-
-  abstract propertyMetas$: ReadonlySignal<PropertyMetaConfig[]>;
-
-  abstract allPropertyMetas$: ReadonlySignal<PropertyMetaConfig[]>;
 
   abstract readonly$: ReadonlySignal<boolean>;
 
@@ -83,47 +88,25 @@ export abstract class DataSourceBase implements DataSource {
     return getPropertyManager(this);
   }
 
-  protected init(extensions: DataViewExtensionType[] = []) {
-    if (this._provider) {
-      throw new Error('DataSource is already initialized.');
-    }
-
-    // add this
-    this.serviceSet(DataSourceIdentifier, this);
-
+  protected configure(extensions: DataViewExtensionType[] = []) {
     this._loadDataViewExtensions(extensions);
-
     this._provider = this.container.provider(undefined, this.parentProvider);
   }
 
   private _loadDataViewExtensions(userExtensions: DataViewExtensionType[]) {
     const extensions = [...CoreDataviewExtensions, ...userExtensions];
-    const context = createDataViewExtensionContext(this.container, this);
-    extensions.forEach(extension => {
-      extension.setup(context);
-    });
+    loadDataViewExtensions(extensions, this.container, this);
   }
 
   get provider() {
     if (!this._provider) {
-      throw new Error(
-        'Datasource must be initialized with init() before getting provider.'
-      );
+      this._provider = this.container.provider(undefined, this.parentProvider);
     }
     return this._provider;
   }
 
   serviceGet<T>(key: GeneralServiceIdentifier<T>): T | null {
     return this.provider.getOptional(key);
-  }
-
-  serviceSet<T>(key: GeneralServiceIdentifier<T>, value: T): void {
-    if (this._provider) {
-      throw new Error(
-        'DataSource is already initialized, cannot set service after initialization.'
-      );
-    }
-    this.container.addValue(key, value);
   }
 
   abstract propertyAdd(
@@ -142,6 +125,10 @@ export abstract class DataSourceBase implements DataSource {
     return computed(() => this.propertyDataGet(propertyId));
   }
 
+  propertyMetaGet(type: string): PropertyMetaConfig | undefined {
+    return this.propertyManager.getPropertyMeta(type) ?? undefined;
+  }
+
   abstract propertyDataSet(
     propertyId: string,
     data: Record<string, unknown>
@@ -158,8 +145,6 @@ export abstract class DataSourceBase implements DataSource {
   abstract propertyDelete(id: string): void;
 
   abstract propertyDuplicate(propertyId: string): string | undefined;
-
-  abstract propertyMetaGet(type: string): PropertyMetaConfig | undefined;
 
   abstract propertyNameGet(propertyId: string): string;
 
@@ -222,14 +207,13 @@ export abstract class DataSourceBase implements DataSource {
     return computed(() => this.viewMetaGetById(viewId));
   }
 
-  fixedProperties$ = computed(() => {
-    return this.allPropertyMetas$.value
-      .filter(v => v.config.fixed)
-      .map(v => v.type);
-  });
-  fixedPropertySet = computed(() => {
-    return new Set(this.fixedProperties$.value);
-  });
+  get fixedProperties() {
+    return this.allPropertyMetas.filter(v => v.config.fixed).map(v => v.type);
+  }
+
+  get fixedPropertySet() {
+    return new Set(this.fixedProperties);
+  }
 
   protected abstract getNormalPropertyAndIndex(propertyId: string):
     | {
@@ -239,12 +223,12 @@ export abstract class DataSourceBase implements DataSource {
     | undefined;
 
   isFixedProperty(propertyId: string) {
-    if (this.fixedPropertySet.value.has(propertyId)) {
+    if (this.fixedPropertySet.has(propertyId)) {
       return true;
     }
     const result = this.getNormalPropertyAndIndex(propertyId);
     if (result) {
-      return this.fixedPropertySet.value.has(result.column.type);
+      return this.fixedPropertySet.has(result.column.type);
     }
     return false;
   }
