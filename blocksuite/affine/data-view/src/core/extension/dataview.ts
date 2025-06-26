@@ -48,7 +48,6 @@ export function createDataViewExtensionContext(
  * class MyDataSource extends DataSourceBase {
  *  constructor(extensions: DataViewExtensionType[]) {
  *   super()
- *   // load invariants here
  *   // then configure the data source with the extensions
  *   this.configure(extensions)
  *  }

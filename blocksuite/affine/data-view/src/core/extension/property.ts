@@ -47,7 +47,7 @@ export type PropertyExtensionConfig<Model extends AnyPropertyModel> = {
  * }
  * effect: () => {
  *  customElements.define(FormulaCell, "formula-cell");
- * customElements.define(FormulaEditor, "formula-editor");
+ *  customElements.define(FormulaEditor, "formula-editor");
  * }
  * })
  * ```
