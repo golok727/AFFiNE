@@ -39,14 +39,11 @@ import { PromptMessage, StreamObject } from './providers';
 import { ChatSessionService } from './session';
 import { CopilotStorage } from './storage';
 import {
-  AvailableModels,
   type ChatHistory,
   type ChatMessage,
   type ChatSessionState,
   SubmittedMessage,
 } from './types';
-
-registerEnumType(AvailableModels, { name: 'CopilotModel' });
 
 export const COPILOT_LOCKER = 'copilot';
 
@@ -238,6 +235,12 @@ class CopilotHistoriesType implements Partial<ChatHistory> {
   @Field(() => String)
   sessionId!: string;
 
+  @Field(() => String)
+  workspaceId!: string;
+
+  @Field(() => String, { nullable: true })
+  docId!: string | null;
+
   @Field(() => Boolean)
   pinned!: boolean;
 
@@ -257,6 +260,9 @@ class CopilotHistoriesType implements Partial<ChatHistory> {
 
   @Field(() => Date)
   createdAt!: Date;
+
+  @Field(() => Date)
+  updatedAt!: Date;
 }
 
 @ObjectType('CopilotQuota')
@@ -300,8 +306,6 @@ class CopilotPromptMessageType {
   @Field(() => GraphQLJSON, { nullable: true })
   params!: Record<string, string> | null;
 }
-
-registerEnumType(AvailableModels, { name: 'CopilotModels' });
 
 @ObjectType()
 class CopilotPromptType {
@@ -533,7 +537,7 @@ export class CopilotResolver {
     }
 
     await this.chatSession.checkQuota(user.id);
-    return await this.chatSession.updateSession({
+    return await this.chatSession.update({
       ...options,
       userId: user.id,
     });
@@ -682,8 +686,8 @@ class CreateCopilotPromptInput {
   @Field(() => String)
   name!: string;
 
-  @Field(() => AvailableModels)
-  model!: AvailableModels;
+  @Field(() => String)
+  model!: string;
 
   @Field(() => String, { nullable: true })
   action!: string | null;
