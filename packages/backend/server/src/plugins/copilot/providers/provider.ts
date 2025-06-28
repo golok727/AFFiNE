@@ -9,10 +9,16 @@ import {
   CopilotProviderNotSupported,
   OnEvent,
 } from '../../../base';
+import { DocReader } from '../../../core/doc';
 import { AccessController } from '../../../core/permission';
+import { IndexerService } from '../../indexer';
 import { CopilotContextService } from '../context';
 import {
+  buildContentGetter,
+  buildDocKeywordSearchGetter,
   buildDocSearchGetter,
+  createDocEditTool,
+  createDocKeywordSearchTool,
   createDocSemanticSearchTool,
   createExaCrawlTool,
   createExaSearchTool,
@@ -125,6 +131,9 @@ export abstract class CopilotProvider<C = any> {
   ): Promise<ToolSet> {
     const tools: ToolSet = {};
     if (options?.tools?.length) {
+      this.logger.debug(`getTools: ${JSON.stringify(options.tools)}`);
+      const ac = this.moduleRef.get(AccessController, { strict: false });
+
       for (const tool of options.tools) {
         const toolDef = this.getProviderSpecificTools(tool, model);
         if (toolDef) {
@@ -132,15 +141,45 @@ export abstract class CopilotProvider<C = any> {
           continue;
         }
         switch (tool) {
+          case 'docEdit': {
+            const doc = this.moduleRef.get(DocReader, { strict: false });
+            const getDocContent = buildContentGetter(ac, doc);
+            tools.doc_edit = createDocEditTool(
+              this.factory,
+              getDocContent.bind(null, options)
+            );
+            break;
+          }
           case 'docSemanticSearch': {
-            const ac = this.moduleRef.get(AccessController, { strict: false });
             const context = this.moduleRef.get(CopilotContextService, {
               strict: false,
             });
-            const searchDocs = buildDocSearchGetter(ac, context);
+
+            const docContext = options.session
+              ? await context.getBySessionId(options.session)
+              : null;
+            const searchDocs = buildDocSearchGetter(ac, context, docContext);
             tools.doc_semantic_search = createDocSemanticSearchTool(
               searchDocs.bind(null, options)
             );
+            break;
+          }
+          case 'docKeywordSearch': {
+            if (this.AFFiNEConfig.indexer.enabled) {
+              const ac = this.moduleRef.get(AccessController, {
+                strict: false,
+              });
+              const indexerService = this.moduleRef.get(IndexerService, {
+                strict: false,
+              });
+              const searchDocs = buildDocKeywordSearchGetter(
+                ac,
+                indexerService
+              );
+              tools.doc_keyword_search = createDocKeywordSearchTool(
+                searchDocs.bind(null, options)
+              );
+            }
             break;
           }
           case 'webSearch': {
@@ -267,6 +306,17 @@ export abstract class CopilotProvider<C = any> {
     throw new CopilotProviderNotSupported({
       provider: this.type,
       kind: 'embedding',
+    });
+  }
+
+  async rerank(
+    _model: ModelConditions,
+    _messages: PromptMessage[][],
+    _options?: CopilotChatOptions
+  ): Promise<number[]> {
+    throw new CopilotProviderNotSupported({
+      provider: this.type,
+      kind: 'rerank',
     });
   }
 }

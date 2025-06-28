@@ -237,12 +237,15 @@ type CopilotHistories {
   """An mark identifying which view to use to display the session"""
   action: String
   createdAt: DateTime!
+  docId: String
   messages: [ChatMessage!]!
   pinned: Boolean!
   sessionId: String!
 
   """The number of tokens used in the session"""
   tokens: Int!
+  updatedAt: DateTime!
+  workspaceId: String!
 }
 
 type CopilotInvalidContextDataType {
@@ -251,22 +254,6 @@ type CopilotInvalidContextDataType {
 
 type CopilotMessageNotFoundDataType {
   messageId: String!
-}
-
-enum CopilotModels {
-  DallE3
-  Gpt4Omni
-  Gpt4Omni0806
-  Gpt4OmniMini
-  Gpt4OmniMini0718
-  Gpt41
-  Gpt41Mini
-  Gpt41Nano
-  Gpt410414
-  GptImage
-  TextEmbedding3Large
-  TextEmbedding3Small
-  TextEmbeddingAda002
 }
 
 input CopilotPromptConfigInput {
@@ -408,7 +395,7 @@ input CreateCopilotPromptInput {
   action: String
   config: CopilotPromptConfigInput
   messages: [CopilotPromptMessageInput!]!
-  model: CopilotModels!
+  model: String!
   name: String!
 }
 
@@ -552,6 +539,7 @@ enum ErrorNames {
   CAN_NOT_BATCH_GRANT_DOC_OWNER_PERMISSIONS
   CAN_NOT_REVOKE_YOURSELF
   CAPTCHA_VERIFICATION_FAILED
+  COMMENT_NOT_FOUND
   COPILOT_ACTION_TAKEN
   COPILOT_CONTEXT_FILE_NOT_SUPPORTED
   COPILOT_DOCS_NOT_FOUND
@@ -641,6 +629,7 @@ enum ErrorNames {
   OWNER_CAN_NOT_LEAVE_WORKSPACE
   PASSWORD_REQUIRED
   QUERY_TOO_LONG
+  REPLY_NOT_FOUND
   RUNTIME_CONFIG_NOT_FOUND
   SAME_EMAIL_PROVIDED
   SAME_SUBSCRIPTION_RECURRING
@@ -1502,6 +1491,24 @@ type SameSubscriptionRecurringDataType {
   recurring: String!
 }
 
+type SearchDocObjectType {
+  blockId: String!
+  createdAt: DateTime!
+  createdByUser: PublicUserType
+  docId: String!
+  highlight: String!
+  title: String!
+  updatedAt: DateTime!
+  updatedByUser: PublicUserType
+}
+
+input SearchDocsInput {
+  keyword: String!
+
+  """Limit the number of docs to return, default is 20"""
+  limit: Int
+}
+
 input SearchHighlight {
   before: String!
   end: String!
@@ -2073,6 +2080,9 @@ type WorkspaceType {
 
   """Search a specific table"""
   search(input: SearchInput!): SearchResultObjectType!
+
+  """Search docs by keyword"""
+  searchDocs(input: SearchDocsInput!): [SearchDocObjectType!]!
 
   """The team subscription of the workspace, if exists."""
   subscription: SubscriptionType

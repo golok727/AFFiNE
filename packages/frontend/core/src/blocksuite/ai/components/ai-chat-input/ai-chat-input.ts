@@ -19,11 +19,14 @@ import { readBlobAsURL } from '../../utils/image';
 import { mergeStreamObjects } from '../../utils/stream-objects';
 import type { ChatChip, DocDisplayConfig } from '../ai-chat-chips/type';
 import { isDocChip } from '../ai-chat-chips/utils';
-import { type ChatMessage, StreamObjectSchema } from '../ai-chat-messages';
+import {
+  type ChatMessage,
+  isChatMessage,
+  StreamObjectSchema,
+} from '../ai-chat-messages';
 import { MAX_IMAGE_COUNT } from './const';
 import type {
   AIChatInputContext,
-  AIModelSwitchConfig,
   AINetworkSearchConfig,
   AIReasoningConfig,
 } from './type';
@@ -317,9 +320,6 @@ export class AIChatInput extends SignalWatcher(
   accessor reasoningConfig!: AIReasoningConfig;
 
   @property({ attribute: false })
-  accessor modelSwitchConfig: AIModelSwitchConfig | undefined = undefined;
-
-  @property({ attribute: false })
   accessor docDisplayConfig!: DocDisplayConfig;
 
   @property({ attribute: false })
@@ -438,7 +438,6 @@ export class AIChatInput extends SignalWatcher(
         </div>
         <div class="chat-input-footer-spacer"></div>
         <chat-input-preference
-          .modelSwitchConfig=${this.modelSwitchConfig}
           .session=${this.session}
           .onModelChange=${this._handleModelChange}
           .modelId=${this.modelId}
@@ -586,7 +585,7 @@ export class AIChatInput extends SignalWatcher(
       await this._preUpdateMessages(userInput, attachments);
 
       const sessionId = await this.createSessionId();
-      let contexts = await this._getMatchedContexts(userInput);
+      let contexts = await this._getMatchedContexts();
       if (abortController.signal.aborted) {
         return;
       }
@@ -609,22 +608,27 @@ export class AIChatInput extends SignalWatcher(
       });
 
       for await (const text of stream) {
-        const messages = [...this.chatContextValue.messages];
-        const last = messages[messages.length - 1] as ChatMessage;
-        try {
-          const parsed = StreamObjectSchema.safeParse(JSON.parse(text));
-          if (parsed.success) {
-            last.streamObjects = mergeStreamObjects([
+        const messages = this.chatContextValue.messages.slice(0);
+        const last = messages.at(-1);
+        if (last && isChatMessage(last)) {
+          try {
+            const parsed = StreamObjectSchema.parse(JSON.parse(text));
+            const streamObjects = mergeStreamObjects([
               ...(last.streamObjects ?? []),
-              parsed.data,
+              parsed,
             ]);
-          } else {
-            last.content += text;
+            messages[messages.length - 1] = {
+              ...last,
+              streamObjects,
+            };
+          } catch {
+            messages[messages.length - 1] = {
+              ...last,
+              content: last.content + text,
+            };
           }
-        } catch {
-          last.content += text;
+          this.updateContext({ messages, status: 'transmitting' });
         }
-        this.updateContext({ messages, status: 'transmitting' });
       }
 
       this.updateContext({ status: 'success' });
@@ -681,46 +685,11 @@ export class AIChatInput extends SignalWatcher(
     }
   };
 
-  private async _getMatchedContexts(userInput: string) {
-    const contextId = await this.getContextId();
-    const workspaceId = this.host.store.workspace.id;
-
+  private async _getMatchedContexts() {
     const docContexts = new Map<
       string,
       { docId: string; docContent: string }
     >();
-    const fileContexts = new Map<
-      string,
-      BlockSuitePresets.AIFileContextOption
-    >();
-
-    const { files: matchedFiles = [], docs: matchedDocs = [] } =
-      (await AIProvider.context?.matchContext(
-        userInput,
-        contextId,
-        workspaceId
-      )) ?? {};
-
-    matchedDocs.forEach(doc => {
-      docContexts.set(doc.docId, {
-        docId: doc.docId,
-        docContent: doc.content,
-      });
-    });
-
-    matchedFiles.forEach(file => {
-      const context = fileContexts.get(file.fileId);
-      if (context) {
-        context.fileContent += `\n${file.content}`;
-      } else {
-        fileContexts.set(file.fileId, {
-          blobId: file.blobId,
-          fileName: file.name,
-          fileType: file.mimeType,
-          fileContent: file.content,
-        });
-      }
-    });
 
     this.chips.forEach(chip => {
       if (isDocChip(chip) && !!chip.markdown?.value) {
@@ -755,10 +724,7 @@ export class AIChatInput extends SignalWatcher(
       };
     });
 
-    return {
-      docs,
-      files: Array.from(fileContexts.values()),
-    };
+    return { docs, files: [] };
   }
 }
 
