@@ -12,15 +12,15 @@ export const formulaPropertyModelConfig = formulaPropertyType.modelConfig({
     default: () => ({ code: '' }),
   },
   rawValue: {
-    // cached value
-    schema: zod.any().nullable(),
+    // store cached value as string
+    schema: zod.string().nullable(),
     default: () => null,
-    toString: function (config): string {
-      return config.value?.toString() ?? '';
+    toString: config => {
+      return config.value ?? '';
     },
     fromString: config => {
       return {
-        value: config.value,
+        value: config.value || null,
         data: { code: config.data.code },
       };
     },
@@ -32,7 +32,7 @@ export const formulaPropertyModelConfig = formulaPropertyType.modelConfig({
     },
   },
   jsonValue: {
-    schema: zod.any().nullable(),
+    schema: zod.string().nullable(),
     isEmpty: () => false,
     type: () => formulaDataType.instance(),
   },

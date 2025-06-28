@@ -114,7 +114,7 @@ export class FormulaService {
     if (!convert) {
       const stringValue = property.stringValueGet(rowId);
       if (!stringValue) {
-        return None;
+        return new StringValue('');
       }
       return new StringValue(stringValue);
     }
@@ -171,7 +171,6 @@ export class FormulaService {
 
     try {
       const result = instance.eval();
-      console.log(result);
       const valueSpec = this._getValueSpec(result);
       return valueSpec.create(result);
     } catch (error) {

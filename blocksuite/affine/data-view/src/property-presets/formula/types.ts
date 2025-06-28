@@ -6,7 +6,7 @@ export const FormulaPropertySchema = zod.object({
   code: zod.string(),
 });
 
-export const FormulaCellValueSchema = zod.any().nullable();
+export const FormulaCellValueSchema = zod.string().nullable();
 
 export type FormulaPropertyData = zod.infer<typeof FormulaPropertySchema>;
 export const formulaDataType = defineDataType(

@@ -10,7 +10,7 @@ import { formulaCellStyle } from './style';
 import { type FormulaPropertyData } from './types';
 
 export class FormulaCell extends BaseCellRenderer<
-  unknown,
+  string,
   FormulaPropertyData,
   FormulaPropertyData
 > {
@@ -29,7 +29,11 @@ export class FormulaCell extends BaseCellRenderer<
   };
 
   get formulaService() {
-    return this.view.serviceGet(FormulaServiceIdentifier);
+    const service = this.view.serviceGet(FormulaServiceIdentifier);
+    if (!service) {
+      throw new Error(`Formula service not found!`);
+    }
+    return service;
   }
 
   private readonly _code$ = computed(() => {
@@ -39,18 +43,14 @@ export class FormulaCell extends BaseCellRenderer<
   private readonly _evalValue$ = computed(() => {
     const service = this.formulaService;
 
-    if (!service) {
-      console.error('Formula service not found');
-      return;
-    }
-
     const res = service.getCellValue({
       code: this.property.data$.value.code,
       propertyId: this.property.id,
       rowId: this.cell.rowId,
     });
 
-    this.valueSetNextTick(res?.toJSON() ?? null);
+    const strValue = res?.value.isNone() ? '' : (res?.toString() ?? '');
+    this.valueSetNextTick(strValue);
 
     return res;
   });
@@ -85,10 +85,11 @@ export class FormulaCell extends BaseCellRenderer<
       </div>`;
     }
 
-    const service = this.formulaService;
-    if (!service) {
-      throw new Error('Formula property used without service initialized');
+    if (value?.value.isNone()) {
+      return undefined;
     }
+
+    const service = this.formulaService;
 
     return service.render(value);
   }
